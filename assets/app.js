@@ -160,7 +160,7 @@ function assignKit(id){
  record.stockId=stockId;
  if(!db.operations.some(o=>o.id===id))db.operations.push(record);
  const test=operationalPlan().find(o=>o.id===id);
- if(test&&test.conflict){alert("Овој сет се преклопува со друга резервација. Пробај друга копија.");return}
+ if(test&&test.conflict){if(!db.operations.some(o=>o.id===id))db.operations.push(record);record.stockId=row.opStockId||"";alert("Овој сет се преклопува со друга резервација. Пробај друга копија.");return}
  save();closeModal();render();rotationDetail(id);
 }
 function rotationDetail(id){
