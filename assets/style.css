@@ -154,3 +154,40 @@ body{overflow-x:hidden}
 
 /* ToySharing logo placement */
 .brand{padding:7px 12px 22px;display:flex;flex-direction:column;align-items:flex-start;gap:0}.brand-logo-link{display:block;width:100%;border-radius:8px}.brand-logo{display:block;width:190px;max-width:100%;height:auto;object-fit:contain}.brand small{padding:0 4px;margin-top:2px;font-size:11px}.public-logo{display:flex;justify-content:center;margin:6px 0 18px}.public-logo img{display:block;width:230px;max-width:80%;height:auto}.brand-logo-link:focus-visible{outline:2px solid var(--ts-sage);outline-offset:3px}
+
+/* Rotation availability planner */
+.rotation-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.rotation-kpi{border:1px solid var(--ts-border);border-radius:12px;background:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:center;gap:12px;color:var(--ts-subtext);font-size:13px}
+.rotation-kpi b{font-size:26px;font-family:Inter,sans-serif;color:var(--ts-forest)}
+.rotation-kpi.risk b{color:#a57323}.rotation-kpi.missing b{color:var(--ts-error)}
+.rotation-legend{display:flex;gap:22px;flex-wrap:wrap;color:var(--ts-subtext);font-size:12px;margin:16px 0}
+.rotation-legend span{display:inline-flex;align-items:center;gap:7px}
+.rotation-legend svg{width:15px;height:15px;stroke-width:1.75}
+.rotation-legend span:nth-child(1) svg{color:var(--ts-success)}
+.rotation-legend span:nth-child(2) svg{color:var(--ts-warning)}
+.rotation-legend span:nth-child(3) svg{color:var(--ts-error)}
+.rotation-scroll{width:100%;overflow-x:auto;border:1px solid var(--ts-border);border-radius:12px;background:#fff}
+.rotation-table{min-width:1390px;width:100%}
+.rotation-head,.rotation-row{display:grid;grid-template-columns:180px repeat(12,minmax(92px,1fr))}
+.rotation-head{position:sticky;top:0;z-index:2;background:var(--ts-muted);color:var(--ts-subtext);font-size:12px;font-weight:600}
+.rotation-head>div{padding:13px 10px;border-right:1px solid var(--ts-border)}
+.rotation-head>div:first-child,.rotation-customer{position:sticky;left:0;z-index:1;background:var(--ts-muted)}
+.rotation-row{border-top:1px solid var(--ts-divider)}
+.rotation-customer{padding:15px 12px;background:#fff;border-right:1px solid var(--ts-border);display:flex;flex-direction:column;gap:4px;justify-content:center}
+.rotation-customer b{font-size:12px;line-height:18px;color:var(--ts-forest)}
+.rotation-customer small{font-size:11px;color:var(--ts-subtext)}
+.rotation-cell{min-width:0;border-right:1px solid var(--ts-divider);padding:5px;display:flex;align-items:stretch}
+.rotation-empty{display:block;text-align:center;align-self:center;width:100%;color:#c2c9c0}
+.rotation-event{width:100%;min-height:77px;border-radius:7px;border:1px solid #cde3d0;background:#eaf4eb;padding:8px 7px;display:flex;flex-direction:column;gap:3px;cursor:pointer;transition:box-shadow .15s ease}
+.rotation-event:hover{box-shadow:0 2px 7px #273d2d16}
+.rotation-event-head{display:flex;justify-content:space-between;align-items:center;color:#39724d}
+.rotation-event-head b{font-size:13px}.rotation-event svg{width:15px;height:15px}
+.rotation-date{font-size:11px;color:#5a7460}.rotation-state{font-size:10px;font-weight:700;color:#39724d}
+.rotation-event.risk{background:#fff6e6;border-color:#ecd5a2}
+.rotation-event.risk .rotation-event-head,.rotation-event.risk .rotation-state{color:#a37324}
+.rotation-event.risk .rotation-date{color:#a48347}
+.rotation-event.missing{background:#fcebe9;border-color:#eac5c2}
+.rotation-event.missing .rotation-event-head,.rotation-event.missing .rotation-state{color:#b44848}
+.rotation-event.missing .rotation-date{color:#a86c68}
+.rotation-footnote{font-size:12px;margin-top:13px;line-height:1.6}
+@media(max-width:700px){.rotation-summary{grid-template-columns:1fr;gap:8px}.rotation-kpi{padding:12px 16px}}
