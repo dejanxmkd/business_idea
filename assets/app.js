@@ -33,7 +33,7 @@ function capacity(id){return db.stock.filter(s=>s.packageId===id&&s.status!=="re
 function peakDemand(id){const events=[];for(const c of db.customers)for(const cy of cycles(c)){if(cy.packageId!==id)continue;let p=padCycle(cy);events.push({t:p.start,d:1},{t:p.end,d:-1})}events.sort((a,b)=>a.t.localeCompare(b.t)||a.d-b.d);let n=0,max=0;for(const e of events){n+=e.d;max=Math.max(max,n)}return max}
 function plan(){return db.packages.map(p=>({...p,have:capacity(p.id),need:peakDemand(p.id),short:Math.max(0,peakDemand(p.id)-capacity(p.id))}))}
 function page(){return document.body.dataset.page||"dashboard"}
-function layout(){const nav=[["index.html","dashboard","◫","Преглед"],["customers.html","customers","♙","Клиенти"],["packages.html","packages","▣","Пакети"],["inventory.html","inventory","▤","Залиха"],["timeline.html","timeline","▦","Временска линија"],["finances.html","finances","◈","Финансии"],["settings.html","settings","⚙","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand">◈ Montessori OS<small>Управување со претплати</small></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><span>'+n[2]+'</span>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
+function layout(){const nav=[["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["timeline.html","timeline","calendar-range","Временска линија"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><span class="brand-row"><i data-lucide="sprout"></i> Montessori OS</span><small>Управување со претплати</small></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
 function header(t,s,action=""){document.getElementById("title").textContent=t;document.getElementById("subtitle").textContent=s;document.getElementById("topAction").innerHTML=action}
 function modal(html){const el=document.getElementById("modal");el.classList.remove("hidden");el.innerHTML='<div class="drawer">'+html+'</div>';el.onclick=e=>{if(e.target===el)closeModal()}}
 function closeModal(){document.getElementById("modal").classList.add("hidden")}
@@ -44,10 +44,10 @@ function render(){const p=page();if(p==="dashboard")dashboard();if(p==="customer
 function dashboard(){
  header("Контролна табла","Оперативен преглед на Montessori претплатите и ротациите");
  const active=db.customers.filter(c=>c.status==="active").length,short=plan().reduce((a,p)=>a+p.short,0);
- const stats=[["Активни претплати",active,"♧"],["Очекувана месечна наплата",money(active*db.settings.price),"◈"],["Физички сетови",db.stock.length,"▣"],["Недостиг на сетови",short,"⚑"]];
+ const stats=[["Активни претплати",active,"users-round"],["Очекувана месечна наплата",money(active*db.settings.price),"credit-card"],["Физички сетови",db.stock.length,"package-check"],["Недостиг на сетови",short,"alert-triangle"]];
  document.getElementById("content").innerHTML=
  '<div class="hero"><div><h2>Сè за твојот Montessori бизнис, на едно место.</h2><p>Следи ги клиентите, развојните пакети и ротацијата без хаос.</p></div><a href="timeline.html" class="btn">Види временска линија →</a></div>'+
- '<div class="grid">'+stats.map(x=>'<div class="card"><span class="kpi-icon">'+x[2]+'</span><div class="muted small">'+x[0]+'</div><div class="metric">'+x[1]+'</div></div>').join("")+'</div>'+
+ '<div class="grid">'+stats.map(x=>'<div class="card"><span class="kpi-icon"><i data-lucide="'+x[2]+'"></i></span><div class="muted small">'+x[0]+'</div><div class="metric">'+x[1]+'</div></div>').join("")+'</div>'+
  '<div class="two"><div class="card"><div class="section-header"><h2>Планиран недостиг на сетови</h2><a href="inventory.html" class="btn light sm">Отвори залиха →</a></div>'+shortages()+'</div><div class="card"><h2>Брз пристап</h2><p>Управувај со претплатници, фиксни пакети и физички копии.</p><div class="section flex"><a class="btn" href="customers.html">Преглед на клиенти</a><a class="btn light" href="packages.html">Преглед на пакети</a></div><div class="note mt">Демо-податоците се пример и не претставуваат вистински клиенти или наплати.</div></div></div>';
 }
 function shortages(){const a=plan().filter(p=>p.short);return a.length?'<div class="table-wrap"><table><thead><tr><th>Пакет</th><th>Потребни</th><th>Достапни</th><th>Недостигаат</th></tr></thead><tbody>'+a.map(p=>'<tr><td>'+p.id+'</td><td>'+p.need+'</td><td>'+p.have+'</td><td><span class="tag bad">'+p.short+'</span></td></tr>').join("")+'</tbody></table></div>':'<div class="empty">Нема конфликт во планираните циклуси.</div>'}
@@ -94,13 +94,13 @@ function demo(){
 
 function signup(){
  const root=document.getElementById("root");
- root.innerHTML='<main class="public-page"><div class="public-card"><a class="small muted" href="index.html">← Администрација</a><div class="public-mark">✳</div><h1>Montessori програма за твоето дете</h1><p>5 внимателно избрани играчки според возраста. Нов сет секој месец.</p><div class="note"><b>'+money(db.settings.price)+' / месечно</b> · Демонстративна регистрација без плаќање</div><form id="signupForm" class="form-grid section">'+field("name","Родител")+field("email","Е-пошта","","email")+field("child","Име на дете")+field("birth","Датум на раѓање","","date")+field("start","Почеток",iso(new Date()),"date")+'<div class="wide"><button type="submit" class="btn" style="width:100%">Пријави се</button></div></form><p class="small">Само локално демо. Не внесувај вистински лични податоци.</p></div></main>';
+ root.innerHTML='<main class="public-page"><div class="public-card"><a class="small muted" href="index.html">← Администрација</a><div class="public-mark"><i data-lucide="sprout"></i></div><h1>Montessori програма за твоето дете</h1><p>5 внимателно избрани играчки според возраста. Нов сет секој месец.</p><div class="note"><b>'+money(db.settings.price)+' / месечно</b> · Демонстративна регистрација без плаќање</div><form id="signupForm" class="form-grid section">'+field("name","Родител")+field("email","Е-пошта","","email")+field("child","Име на дете")+field("birth","Датум на раѓање","","date")+field("start","Почеток",iso(new Date()),"date")+'<div class="wide"><button type="submit" class="btn" style="width:100%">Пријави се</button></div></form><p class="small">Само локално демо. Не внесувај вистински лични податоци.</p></div></main>';
  document.getElementById("signupForm").addEventListener("submit",function(e){
   e.preventDefault();const d=formData("signupForm"),age=diffMonths(d.birth,d.start);
   if(date(d.birth)>date(d.start)||age<12||age>23){alert("Пилотот е за возраст од 12 до 23 месеци.");return}
   if(db.customers.some(c=>c.email.toLowerCase()===d.email.toLowerCase()&&c.child.toLowerCase()===d.child.toLowerCase())){alert("Оваа регистрација веќе постои.");return}
   db.customers.push({id:uid(),name:d.name,email:d.email,child:d.child,age:age,start:d.start,status:"paused",source:"public-demo"});
-  save();document.querySelector(".public-card").innerHTML='<div class="public-mark">✓</div><h1>Регистрацијата е примена</h1><p>Не е извршено плаќање. Потребна е административна активација.</p><a class="btn" href="customers.html">Преглед во администрацијата</a>';
+  save();document.querySelector(".public-card").innerHTML='<div class="public-mark"><i data-lucide="check"></i></div><h1>Регистрацијата е примена</h1><p>Не е извршено плаќање. Потребна е административна активација.</p><a class="btn" href="customers.html">Преглед во администрацијата</a>';
  });
 }
 
@@ -114,3 +114,15 @@ if(localStorage.getItem(KEY)===null){
  save();
 }
 document.addEventListener("DOMContentLoaded",()=>{if(page()==="signup")signup();else layout()});
+
+function initializeLucide(){
+  const run=()=>{if(window.lucide && document.querySelector("i[data-lucide]"))window.lucide.createIcons({attrs:{"stroke-width":1.85}})};
+  const script=document.createElement("script");
+  script.src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js";
+  script.onload=run;
+  document.head.appendChild(script);
+  const observer=new MutationObserver(run);
+  observer.observe(document.body,{childList:true,subtree:true});
+  run();
+}
+document.addEventListener("DOMContentLoaded",initializeLucide);
