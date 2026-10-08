@@ -286,3 +286,8 @@ body{overflow-x:hidden}
 .air-link{display:inline-flex;gap:3px;align-items:center;background:transparent;border:0;color:var(--ts-sage-hover);font:600 12px Inter,sans-serif;cursor:pointer}.air-link svg{width:14px;height:14px}
 .air-footnote{font-size:11px;color:var(--ts-subtext);padding:14px 28px 25px}
 @media(max-width:800px){.top{flex-wrap:wrap;padding:17px!important}.air-metrics{flex-wrap:wrap}.air-metrics>div:not(.air-rule){padding:12px 14px}.air-rule{margin-left:0;padding:10px 14px}.air-section-title{padding:17px 14px 10px}.air-section-title>span{display:none}}
+
+/* Give secondary data screens a compact workspace gutter without restoring card-based layouts */
+body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) #content{padding:18px 26px 32px!important}
+body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) .top{min-height:84px}
+@media(max-width:800px){body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) #content{padding:14px!important}}
