@@ -46,12 +46,12 @@ function dashboard(){
  const active=db.customers.filter(c=>c.status==="active").length,short=plan().reduce((a,p)=>a+p.short,0);
  const stats=[["Активни претплати",active,"users-round"],["Очекувана месечна наплата",money(active*db.settings.price),"credit-card"],["Физички сетови",db.stock.length,"package-check"],["Недостиг на сетови",short,"alert-triangle"]];
  document.getElementById("content").innerHTML=
- '<div class="hero"><div><h2>Сè за твојот Montessori бизнис, на едно место.</h2><p>Следи ги клиентите, развојните пакети и ротацијата без хаос.</p></div><a href="timeline.html" class="btn">Види временска линија →</a></div>'+
+ '<div class="hero"><div><h2>Сè за твојот Montessori бизнис, на едно место.</h2><p>Следи ги клиентите, развојните пакети и ротацијата без хаос.</p></div><a href="timeline.html" class="btn"><i data-lucide="calendar-days"></i> Види временска линија</a></div>'+
  '<div class="grid">'+stats.map(x=>'<div class="card"><span class="kpi-icon"><i data-lucide="'+x[2]+'"></i></span><div class="muted small">'+x[0]+'</div><div class="metric">'+x[1]+'</div></div>').join("")+'</div>'+
  '<div class="two"><div class="card"><div class="section-header"><h2>Планиран недостиг на сетови</h2><a href="inventory.html" class="btn light sm">Отвори залиха →</a></div>'+shortages()+'</div><div class="card"><h2>Брз пристап</h2><p>Управувај со претплатници, фиксни пакети и физички копии.</p><div class="section flex"><a class="btn" href="customers.html">Преглед на клиенти</a><a class="btn light" href="packages.html">Преглед на пакети</a></div><div class="note mt">Демо-податоците се пример и не претставуваат вистински клиенти или наплати.</div></div></div>';
 }
 function shortages(){const a=plan().filter(p=>p.short);return a.length?'<div class="table-wrap"><table><thead><tr><th>Пакет</th><th>Потребни</th><th>Достапни</th><th>Недостигаат</th></tr></thead><tbody>'+a.map(p=>'<tr><td>'+p.id+'</td><td>'+p.need+'</td><td>'+p.have+'</td><td><span class="tag bad">'+p.short+'</span></td></tr>').join("")+'</tbody></table></div>':'<div class="empty">Нема конфликт во планираните циклуси.</div>'}
-function customers(){header("Клиенти","Регистрации од веб-страницата и нивните индивидуални циклуси",'<a class="btn light" href="signup.html">Јавна регистрација ↗</a>');document.getElementById("content").innerHTML='<div class="card table-wrap"><table><thead><tr><th>Клиент</th><th>Дете</th><th>Стартна возраст</th><th>Почеток</th><th>Статус</th><th>Акции</th></tr></thead><tbody>'+db.customers.map(c=>'<tr><td><b>'+esc(c.name)+'</b><p class="small">'+esc(c.email)+'</p></td><td>'+esc(c.child)+'</td><td>'+c.age+' месеци</td><td>'+c.start+'</td><td><span class="tag '+(c.status==="active"?"": "warn")+'">'+(c.status==="active"?"Активен":c.status==="paused"?"Паузиран":"Откажан")+'</span></td><td><div class="actions"><button class="btn light sm" onclick="customerForm(\''+c.id+'\')">Уреди</button><button class="btn danger sm" onclick="deleteCustomer(\''+c.id+'\')">Избриши</button></div></td></tr>').join("")+'</tbody></table>'+(db.customers.length?"":'<div class="empty">Нема клиенти. Додај го првиот клиент.</div>')+'</div>'}
+function customers(){header("Клиенти","Регистрации од веб-страницата и нивните индивидуални циклуси",'<a class="btn light" href="signup.html">Јавна регистрација ↗</a>');document.getElementById("content").innerHTML='<div class="card table-wrap"><table><thead><tr><th>Клиент</th><th>Дете</th><th>Стартна возраст</th><th>Почеток</th><th>Статус</th><th>Акции</th></tr></thead><tbody>'+db.customers.map(c=>'<tr><td><b>'+esc(c.name)+'</b><p class="small">'+esc(c.email)+'</p></td><td>'+esc(c.child)+'</td><td>'+c.age+' месеци</td><td>'+c.start+'</td><td><span class="tag '+(c.status==="active"?"": "warn")+'">'+(c.status==="active"?"Активен":c.status==="paused"?"Паузиран":"Откажан")+'</span></td><td><div class="actions"><button class="btn light sm" onclick="customerForm(\''+c.id+'\')">Уреди</button><button class="btn danger sm" onclick="deleteCustomer(\''+c.id+'\')">Избриши</button></div></td></tr>').join("")+'</tbody></table>'+(db.customers.length?"":'<div class="empty">Нема регистрации.</div>')+'</div>'}
 function customerForm(id){const c=db.customers.find(x=>x.id===id)||{name:"",email:"",child:"",age:12,start:iso(new Date()),status:"active"};modal('<h2>'+(id?"Уреди клиент":"Нов клиент")+'</h2><p>Циклусот се повторува на истиот ден секој месец.</p><form id="customerForm" class="form-grid section">'+field("name","Родител",c.name)+field("child","Име на дете",c.child)+field("email","Е-пошта",c.email,"email")+field("age","Возраст на почеток (12–23)",c.age,"number",'min="12" max="23"')+field("start","Датум на прва испорака",c.start,"date")+'<div><label>Статус</label><select name="status"><option value="active">Активен</option><option value="paused">Паузиран</option><option value="cancelled">Откажан</option></select></div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveCustomer(\''+(id||"")+'\')">Зачувај</button></footer>');document.querySelector('#customerForm [name="status"]').value=c.status}
 function saveCustomer(id){const f=document.getElementById("customerForm");if(!f.reportValidity())return;const d=formData("customerForm");d.age=Number(d.age);if(id)Object.assign(db.customers.find(x=>x.id===id),d);else db.customers.push({id:uid(),...d});save();closeModal();render()}
 function deleteCustomer(id){if(!confirmDelete("Да се избрише клиентот?"))return;db.customers=db.customers.filter(c=>c.id!==id);save();render()}
@@ -67,13 +67,12 @@ function finances(){header("Финансии","Евиденција на нап�
 function transactionForm(type){modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
 function saveTransaction(type){const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
 function deleteTransaction(type,id){if(!confirmDelete("Да се избрише трансакцијата?"))return;const key=type==="payment"?"payments":"expenses";db[key]=db[key].filter(x=>x.id!==id);save();render()}
-function settings(){header("Поставки","Параметри, тест податоци и локална резервна копија.");const s=db.settings;document.getElementById("content").innerHTML='<div class="two"><div class="card"><h2>Бизнис-параметри</h2><form id="settingsForm" class="form-grid">'+field("price","Претплата (PLN/месец)",s.price,"number",'min="0" step="0.01"')+field("shipping","Испорака и враќање (PLN)",s.shipping,"number",'min="0" step="0.01"')+field("handling","Обработка по циклус (PLN)",s.handling,"number",'min="0" step="0.01"')+field("buffer","Резервни денови меѓу клиенти",s.buffer,"number",'min="0" max="30"')+'</form><div class="mt"><button class="btn" onclick="saveSettings()">Зачувај поставки</button></div></div><div class="card"><h2>Податоци</h2><p>Податоците се чуваат локално. Извези JSON за да направиш резервна копија.</p><div class="section flex"><button class="btn light" onclick="exportData()">Извези JSON</button><label class="btn light" style="margin:0;cursor:pointer">Увези JSON<input type="file" accept=".json" onchange="importData(event)" hidden></label><button class="btn light" onclick="demo()">Демо: 5 клиенти</button><button class="btn danger" onclick="resetAll()">Избриши ги сите податоци</button></div></div></div>'}
+function settings(){header("Поставки","Параметри, тест податоци и локална резервна копија.");const s=db.settings;document.getElementById("content").innerHTML='<div class="two"><div class="card"><h2>Бизнис-параметри</h2><form id="settingsForm" class="form-grid">'+field("price","Претплата (PLN/месец)",s.price,"number",'min="0" step="0.01"')+field("shipping","Испорака и враќање (PLN)",s.shipping,"number",'min="0" step="0.01"')+field("handling","Обработка по циклус (PLN)",s.handling,"number",'min="0" step="0.01"')+field("buffer","Резервни денови меѓу клиенти",s.buffer,"number",'min="0" max="30"')+'</form><div class="mt"><button class="btn" onclick="saveSettings()">Зачувај поставки</button></div></div><div class="card"><h2>Податоци</h2><p>Податоците се чуваат локално. Извези JSON за да направиш резервна копија.</p><div class="section flex"><button class="btn light" onclick="exportData()">Извези JSON</button><label class="btn light" style="margin:0;cursor:pointer">Увези JSON<input type="file" accept=".json" onchange="importData(event)" hidden></label><button class="btn light" onclick="demo()">Вчитај демо-податоци</button><button class="btn danger" onclick="resetAll()">Избриши ги сите податоци</button></div></div></div>'}
 function saveSettings(){const f=document.getElementById("settingsForm");if(!f.reportValidity())return;const d=formData("settingsForm");db.settings=Object.fromEntries(Object.entries(d).map(([k,v])=>[k,Number(v)]));save();alert("Поставките се зачувани.")}
 function exportData(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(db,null,2)],{type:"application/json"}));a.download="montessori-backup-"+iso(new Date())+".json";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
 async function importData(e){const file=e.target.files?.[0];if(!file)return;try{const x=JSON.parse(await file.text());if(!Array.isArray(x.customers)||!Array.isArray(x.packages)||!Array.isArray(x.stock))throw Error("Невалиден формат");if(!confirm("Увозот ќе ги замени сегашните податоци. Продолжи?"))return;db={...seed(),...x};save();render()}catch(err){alert("Не може да се увезе: "+err.message)}}
-function demo(){
- if(!confirm("Ќе се заменат тековните податоци со пример со 8 клиенти и залиха. Продолжи?"))return;
- db=seed();
+function buildDemo(){
+ const data=seed();
  const people=[
  ["Ана Петровска","Лука",12,"2026-10-15","active"],
  ["Бојан Стојанов","Мила",13,"2026-09-08","active"],
@@ -82,14 +81,30 @@ function demo(){
  ["Стефан Николов","Ива",18,"2026-10-19","active"],
  ["Катарина Милевска","Марко",12,"2026-11-01","active"],
  ["Игор Ристов","Теа",20,"2026-09-27","paused"],
- ["Сара Јовановска","Нина",15,"2026-10-11","active"]
+ ["Сара Јовановска","Нина",15,"2026-10-11","active"],
+ ["Никола Арсов","Матеј",17,"2026-09-24","active"],
+ ["Јасмина Георгиева","Ема",19,"2026-10-06","active"],
+ ["Филип Трајков","Давид",12,"2026-10-28","paused"],
+ ["Ивана Костова","Софија",21,"2026-09-14","active"]
  ];
- db.customers=people.map((p,i)=>({id:"demo-c"+i,name:p[0],child:p[1],email:"primer"+(i+1)+"@example.com",age:p[2],start:p[3],status:p[4]}));
- const ids=["M12","M12","M13","M14","M14","M15","M16","M18","M20"];
- db.stock=ids.map((id,i)=>({id:"demo-s"+i,code:"SET-"+String(i+1).padStart(3,"0"),packageId:id,price:85+(Number(id.slice(1))-12)*5,condition:i===3?"Добра":"Многу добра",status:i===8?"cleaning":"ready"}));
- db.payments=[{id:"dp1",date:"2026-10-03",description:"Претплата — Марија Илиевска",amount:119},{id:"dp2",date:"2026-10-08",description:"Претплата — Бојан Стојанов",amount:119},{id:"dp3",date:"2026-10-15",description:"Претплата — Ана Петровска",amount:119},{id:"dp4",date:"2026-10-19",description:"Претплата — Стефан Николов",amount:119}];
- db.expenses=[{id:"de1",date:"2026-10-02",description:"Набавка на половни Montessori сетови",amount:485},{id:"de2",date:"2026-10-05",description:"InPost испораки",amount:82},{id:"de3",date:"2026-10-10",description:"Средства за чистење и амбалажа",amount:34}];
- save();render();
+ data.customers=people.map((p,i)=>({id:"demo-c"+i,name:p[0],child:p[1],email:"demo"+(i+1)+"@example.com",age:p[2],start:p[3],status:p[4],source:"demo"}));
+ const ids=["M12","M12","M12","M13","M13","M14","M14","M15","M15","M16","M17","M18","M18","M19","M20","M21"];
+ data.stock=ids.map((id,i)=>({id:"demo-s"+i,code:"SET-"+String(i+1).padStart(3,"0"),packageId:id,price:85+(Number(id.slice(1))-12)*5,condition:i%6===0?"Добра":"Многу добра",status:i===14?"cleaning":"ready"}));
+ data.payments=[
+ ["2026-10-03","Претплата — Марија",119],["2026-10-06","Претплата — Јасмина",119],
+ ["2026-10-08","Претплата — Бојан",119],["2026-10-11","Претплата — Сара",119],
+ ["2026-10-14","Претплата — Ивана",119],["2026-10-15","Претплата — Ана",119]
+ ].map((v,i)=>({id:"dp"+i,date:v[0],description:v[1],amount:v[2]}));
+ data.expenses=[
+ ["2026-10-02","Половни играчки M12–M14",415],["2026-10-04","Амбалажа",84],
+ ["2026-10-07","InPost испораки",146],["2026-10-09","Чистење",39],
+ ["2026-10-12","Половни играчки M18–M19",240]
+ ].map((v,i)=>({id:"de"+i,date:v[0],description:v[1],amount:v[2]}));
+ return data;
+}
+function demo(){
+ if(!confirm("Замена со 12 демо-клиенти, 16 физички сетови и пример-финансии?"))return;
+ db=buildDemo();save();render();
 }
 
 function signup(){
@@ -105,14 +120,7 @@ function signup(){
 }
 
 function resetAll(){if(!confirm("Сите локални податоци ќе се избришат. Продолжи?"))return;db=seed();save();render()}
-if(localStorage.getItem(KEY)===null){
- const people=[["Ана Петровска","Лука",12,"2026-10-15"],["Бојан Стојанов","Мила",13,"2026-09-08"],["Елена Марковска","Јана",16,"2026-10-22"],["Марија Илиевска","Филип",14,"2026-10-03"],["Стефан Николов","Ива",18,"2026-10-19"],["Катарина Милевска","Марко",12,"2026-11-01"],["Игор Ристов","Теа",20,"2026-09-27"],["Сара Јовановска","Нина",15,"2026-10-11"]];
- db.customers=people.map((p,i)=>({id:"demo-c"+i,name:p[0],child:p[1],email:"primer"+(i+1)+"@example.com",age:p[2],start:p[3],status:i===6?"paused":"active"}));
- db.stock=["M12","M12","M13","M14","M14","M15","M16","M18","M20"].map((id,i)=>({id:"demo-s"+i,code:"SET-"+String(i+1).padStart(3,"0"),packageId:id,price:85+(Number(id.slice(1))-12)*5,condition:"Многу добра",status:i===8?"cleaning":"ready"}));
- db.payments=[{id:"dp1",date:"2026-10-03",description:"Претплата — Марија Илиевска",amount:119},{id:"dp2",date:"2026-10-08",description:"Претплата — Бојан Стојанов",amount:119},{id:"dp3",date:"2026-10-15",description:"Претплата — Ана Петровска",amount:119}];
- db.expenses=[{id:"de1",date:"2026-10-02",description:"Набавка на Montessori сетови",amount:485},{id:"de2",date:"2026-10-05",description:"InPost испораки",amount:82}];
- save();
-}
+if(localStorage.getItem(KEY)===null){db=buildDemo();save();}
 document.addEventListener("DOMContentLoaded",()=>{if(page()==="signup")signup();else layout()});
 
 function initializeLucide(){
