@@ -62,7 +62,55 @@ function inventory(){header("Залиха","Секоја физичка копи
 function stockForm(id){const s=db.stock.find(x=>x.id===id)||{code:"SET-"+String(db.stock.length+1).padStart(3,"0"),packageId:"M12",price:85,condition:"Многу добра",status:"ready"};modal('<h2>'+(id?"Уреди сет":"Нов физички сет")+'</h2><form id="stockForm" class="form-grid section">'+field("code","Инвентарен број",s.code)+'<div><label>Тип пакет</label><select name="packageId">'+db.packages.map(p=>'<option value="'+p.id+'">'+p.id+" · "+esc(p.title)+'</option>').join("")+'</select></div>'+field("price","Набавна цена (PLN)",s.price,"number",'min="0" step="0.01"')+field("condition","Состојба",s.condition)+'<div class="wide"><label>Статус</label><select name="status"><option value="ready">Подготвен</option><option value="cleaning">На чистење</option><option value="retired">Повлечен</option></select></div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveStock(\''+(id||"")+'\')">Зачувај</button></footer>');document.querySelector('#stockForm [name="packageId"]').value=s.packageId;document.querySelector('#stockForm [name="status"]').value=s.status}
 function saveStock(id){const f=document.getElementById("stockForm");if(!f.reportValidity())return;const d=formData("stockForm");d.price=Number(d.price);if(id)Object.assign(db.stock.find(x=>x.id===id),d);else db.stock.push({id:uid(),...d});save();closeModal();render()}
 function deleteStock(id){if(!confirmDelete("Да се избрише физичкиот сет?"))return;db.stock=db.stock.filter(x=>x.id!==id);save();render()}
-function timeline(){header("Временска линија","Месечни циклуси според реалниот стартен датум на секој клиент.");const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),1);const startDate=iso(start);const columns=Array.from({length:12},(_,i)=>addMonths(startDate,i));const cs=db.customers.filter(c=>c.status==="active");const rows=cs.map(c=>{const cyc=cycles(c);return '<div class="tl-row"><div class="tl-name">'+esc(c.name)+'<p class="small">'+esc(c.child)+'</p></div>'+columns.map(col=>{const end=addMonths(col,1);const relevant=cyc.filter(cy=>cy.start<end&&cy.end>col);return '<div class="tl-cell">'+relevant.map(cy=>{const clash=plan().find(p=>p.id===cy.packageId)?.short>0;return '<div class="period '+(clash?"conflict":"")+'" title="'+cy.start+' → '+cy.end+'">'+cy.packageId+'<small>'+cy.start.slice(5)+' → '+cy.end.slice(5)+'</small></div>'}).join("")+'</div>'}).join("")+'</div>'}).join("");document.getElementById("content").innerHTML='<div class="card"><h2>Ротација по клиенти · следни 12 месеци</h2><p>Секој блок го покажува точниот период. Преклопувањата се означени според бројот на физички копии и дополнителниот резервен период.</p><div class="legend"><span class="dot"></span> Планиран циклус <span class="dot red"></span> Недоволна залиха</div><div class="timeline-scroll"><div class="timeline"><div class="tl-head"><div>Клиент</div>'+columns.map(x=>'<div>'+new Date(x+"T12:00:00").toLocaleDateString("mk-MK",{month:"short",year:"numeric"})+'</div>').join("")+'</div>'+rows+'</div></div>'+(cs.length?"":'<div class="empty">Додај активни клиенти за да ја видиш временската линија.</div>')+'</div><div class="section card"><h2>План за набавка</h2>'+shortages()+'</div>'}
+function timeline(){
+ header("Планер за ротација","По една замена во месецот на испорака, со проверка дали пакетот може да се додели.");
+ const first=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1));
+ const months=Array.from({length:12},(_,i)=>addMonths(first,i));
+ const customers=db.customers.filter(c=>c.status==="active");
+ const orders=customers.flatMap(c=>cycles(c).map(cy=>({...cy,customer:c}))).sort((a,b)=>a.start.localeCompare(b.start)||a.customer.name.localeCompare(b.customer.name));
+ const buffers=Number(db.settings.buffer||0);
+ const availability={};
+ for(const p of db.packages){
+   availability[p.id]=db.stock.filter(s=>s.packageId===p.id&&s.status!=="retired").map(s=>({code:s.code,available:"0000-01-01",status:s.status}));
+ }
+ const decisions=new Map();let counts={ready:0,risk:0,missing:0};
+ for(const order of orders){
+   const pool=availability[order.packageId]||[];
+   const candidate=pool.filter(x=>x.available<=order.start).sort((a,b)=>a.available.localeCompare(b.available))[0];
+   let state="missing",reason="Нема слободен физички сет во датумот на замена.",code="—";
+   if(candidate){
+     code=candidate.code;
+     const days=(date(order.start)-date(candidate.available))/86400000;
+     state=candidate.status==="cleaning"||days<=3?"risk":"ready";
+     reason=candidate.status==="cleaning"?"Сетот е означен како „на чистење“ — потребна е потврда пред испорака.":days<=3?"Мал временски простор за испорака и подготовка.":"Планиран сет: "+code;
+     candidate.available=iso(new Date(date(order.end).getTime()+buffers*86400000));
+   }
+   decisions.set(order.id,{state,reason,code});
+   if(order.start>=first&&order.start<addMonths(first,12))counts[state]++;
+ }
+ const symbols={ready:"check-circle-2",risk:"alert-triangle",missing:"x-circle"};
+ const words={ready:"Достапен",risk:"Ризик",missing:"Недостиг"};
+ const rows=customers.map(c=>{
+   const own=orders.filter(o=>o.customer.id===c.id);
+   return '<div class="rotation-row"><div class="rotation-customer"><b>'+esc(c.name)+'</b><small>'+esc(c.child)+'</small></div>'+
+   months.map(month=>{
+     const o=own.find(o=>o.start>=month&&o.start<addMonths(month,1));
+     if(!o)return '<div class="rotation-cell"><span class="rotation-empty">—</span></div>';
+     const d=decisions.get(o.id);
+     return '<div class="rotation-cell"><div class="rotation-event '+d.state+'" title="'+esc(d.reason)+'"><span class="rotation-event-head"><b>'+o.packageId+'</b><i data-lucide="'+symbols[d.state]+'"></i></span><span class="rotation-date">'+o.start.slice(8,10)+'. '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</span><span class="rotation-state">'+words[d.state]+'</span></div></div>';
+   }).join("")+'</div>';
+ }).join("");
+ const summary=[["ready","Достапни замени"],["risk","Со ризик"],["missing","Недостигаат сетови"]].map(x=>'<div class="rotation-kpi '+x[0]+'"><span>'+x[1]+'</span><b>'+counts[x[0]]+'</b></div>').join("");
+ document.getElementById("content").innerHTML=
+ '<div class="rotation-summary">'+summary+'</div>'+
+ '<div class="card section"><div class="section-header"><div><h2>Календар на замени · следни 12 месеци</h2><p>Еден блок = еден нов пакет за испорака. Датумот е индивидуален за секое дете.</p></div></div>'+
+ '<div class="rotation-legend"><span><i data-lucide="check-circle-2"></i> Има резервиран сет</span><span><i data-lucide="alert-triangle"></i> Потребна проверка</span><span><i data-lucide="x-circle"></i> Потребна набавка</span></div>'+
+ '<div class="rotation-scroll"><div class="rotation-table"><div class="rotation-head"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"short",year:"numeric"})+'</div>').join("")+'</div>'+rows+'</div></div>'+
+ (customers.length?"":'<div class="empty">Нема активни клиенти.</div>')+
+ '<p class="rotation-footnote">Статусите се прогноза врз основа на внесените физички сетови, циклуси и '+buffers+' резервни денови. Не се потврда дека пратката е вратена или исчистена. Притисни врз блок или задржи курсор за детали.</p></div>'+
+ '<div class="section card"><h2>Потребни дополнителни сетови</h2>'+shortages()+'</div>';
+ document.querySelectorAll(".rotation-event").forEach(el=>el.addEventListener("click",()=>alert(el.title)));
+}
 function finances(){header("Финансии","Евиденција на наплати, расходи и предвиден приход.",'<div class="flex"><button class="btn light" onclick="transactionForm(\'expense\')">+ Трошок</button><button class="btn" onclick="transactionForm(\'payment\')">+ Наплата</button></div>');const payments=db.payments.reduce((s,x)=>s+Number(x.amount),0),expenses=db.expenses.reduce((s,x)=>s+Number(x.amount),0),monthly=db.customers.filter(c=>c.status==="active").length*db.settings.price;document.getElementById("content").innerHTML='<div class="grid">'+[["Евидентирани наплати",money(payments)],["Евидентирани трошоци",money(expenses)],["Салдо",money(payments-expenses)],["Планирана месечна наплата",money(monthly)]].map(a=>'<div class="card"><span class="muted small">'+a[0]+'</span><div class="metric">'+a[1]+'</div></div>').join("")+'</div><div class="section card"><h2>Трансакции</h2><div class="table-wrap"><table><thead><tr><th>Датум</th><th>Вид</th><th>Опис</th><th>Износ</th><th>Акции</th></tr></thead><tbody>'+[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>'<tr><td>'+x.date+'</td><td>'+(x.type==="payment"?"Наплата":"Трошок")+'</td><td>'+esc(x.description)+'</td><td>'+money(x.amount)+'</td><td><button class="btn danger sm" onclick="deleteTransaction(\''+x.type+'\',\''+x.id+'\')">Избриши</button></td></tr>').join("")+'</tbody></table></div></div><div class="note warning">Наплатите се евидентираат рачно. Нема поврзана платежна услуга или автоматско книжење.</div>'}
 function transactionForm(type){modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
 function saveTransaction(type){const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
