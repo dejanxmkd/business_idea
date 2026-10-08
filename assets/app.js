@@ -147,13 +147,29 @@ function timeline(){
  '<section class="ops-section"><div class="ops-heading"><div><h2>Оперативна листа за испораки и враќања</h2><p>Вистинските потврди се внесуваат преку „Управувај“.</p></div></div><div class="table-wrap"><table><thead><tr><th>Планирано испраќање</th><th>Клиент / адреса</th><th>Пакет</th><th>Физички сет</th><th>Операција</th><th></th></tr></thead><tbody>'+deliveries.map(o=>'<tr><td>'+o.dispatch+'</td><td><b>'+esc(o.customer.name)+'</b><p class="small">'+esc(o.address)+'</p></td><td>'+o.packageId+'</td><td>'+esc(o.code)+'</td><td><span class="tag '+(o.state==="missing"?"bad":o.state==="risk"?"warn":"")+'">'+label[o.state]+'</span></td><td><button class="btn light sm" onclick="rotationDetail(\''+o.id+'\')">Управувај</button></td></tr>').join("")+'</tbody></table></div></section>'+
  '<p class="ops-disclaimer">Важно: датумите за испраќање се ориентир (2 дена пред почетокот). За повторна употреба се бара минимум 7 дена по враќање; статусите се зачувуваат локално и не претставуваат автоматско InPost следење или cloud синхронизација.</p>';
 }
+function assignKit(id){
+ const select=document.getElementById("physicalKitChoice");if(!select)return;
+ const row=operationalPlan().find(o=>o.id===id);if(!row)return;
+ const stockId=select.value;
+ const record=db.operations.find(o=>o.id===id)||{id,step:"planned"};
+ if(record.step!=="planned"){alert("Не можеш да го смениш физичкиот сет откако е испратен.");return}
+ if(stockId){
+   const s=db.stock.find(x=>x.id===stockId);
+   if(!s||s.packageId!==row.packageId||s.status==="retired"){alert("Невалидна физичка копија.");return}
+ }
+ record.stockId=stockId;
+ if(!db.operations.some(o=>o.id===id))db.operations.push(record);
+ const test=operationalPlan().find(o=>o.id===id);
+ if(test&&test.conflict){alert("Овој сет се преклопува со друга резервација. Пробај друга копија.");return}
+ save();closeModal();render();rotationDetail(id);
+}
 function rotationDetail(id){
  const o=operationalPlan().find(x=>x.id===id);if(!o)return;
  const steps={planned:"Планирано",shipped:"Испратено",delivered:"Доставено",returned:"Вратено",cleaned:"Исчистено"};
  const actions={planned:[["shipped","Потврди испраќање"]],shipped:[["delivered","Потврди достава"],["returned","Потврди враќање"]],delivered:[["returned","Потврди враќање"]],returned:[["cleaned","Потврди чистење"]],cleaned:[]};
  const fields=[["Дете",o.customer.child],["Пакет",o.packageId],["Физички сет",o.code],["Испрати до",o.dispatch],["Почеток",o.start],["Очекувано враќање",o.end],["Вратено на",o.returnedAt||"Не е потврдено"],["Подготвен најрано",o.readyAfter||"Нема"],["Адреса",o.address],["Состојба",o.description]];
  modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>Оперативен статус: <b>'+steps[o.status]+'</b></p><div class="ops-detail">'+fields.map(f=>'<div><span>'+f[0]+'</span><strong>'+esc(f[1])+'</strong></div>').join("")+'</div>'+
- '<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
+ '<div class="section"><label for="physicalKitChoice">Физички сет · доделување</label><select id="physicalKitChoice" '+(o.status!=="planned"?"disabled":"")+'><option value="">Автоматски избор</option>'+db.stock.filter(s=>s.packageId===o.packageId&&s.status!=="retired").map(s=>'<option value="'+esc(s.id)+'" '+((o.opStockId||o.stockId)===s.id?"selected":"")+'>'+esc(s.code)+'</option>').join("")+'</select><div class="mt"><button class="btn light sm" '+(o.status!=="planned"?"disabled":"")+' onclick="assignKit(\''+o.id+'\')">Зачувај доделување</button></div></div>'+'<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
  '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+
  (o.state!=="missing"?actions[o.status].map(a=>'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\''+a[0]+'\')">'+a[1]+'</button>').join(""):'<a class="btn" href="inventory.html">Внеси нов сет</a>')+'</footer>');
 }
