@@ -42,3 +42,11 @@ label{color:#4d6152}.drawer{box-shadow:-15px 0 50px #17291c24}.drawer-mask{backg
 @media(max-width:700px){.sidebar{width:100%;padding:8px 10px;border-bottom:1px solid var(--border);border-right:0}.brand{padding:11px 12px}.main{width:100%;padding:22px 15px}.nav a{font-size:12px}.program-grid{grid-template-columns:1fr}.hero{padding:21px;display:block}.hero .btn{margin-top:15px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 .public-page{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:28px;background:linear-gradient(150deg,#f5faf5,#e7f0e9)}.public-card{width:min(620px,100%);padding:36px;background:white;border:1px solid #e2e8e1;border-radius:18px;box-shadow:0 20px 65px #19382412}.public-card h1{margin:10px 0}.public-card .note{margin:22px 0}.public-mark{font-size:27px;color:#257454;background:#edf6ef;border-radius:12px;width:52px;height:52px;display:grid;place-items:center;margin-top:20px}.public-card .form-grid{gap:15px}.public-card .small{margin-top:18px}
+
+/* Lucide icon system */
+.brand-row{display:flex;align-items:center;gap:10px;white-space:nowrap}
+.brand-row svg{height:21px;width:21px;color:#20805a;stroke-width:2}
+.nav a svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.85}
+.kpi-icon svg{width:19px;height:19px}
+.public-mark svg{width:25px;height:25px}
+.btn svg{vertical-align:middle;width:15px;height:15px}
