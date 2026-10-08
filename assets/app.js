@@ -14,9 +14,9 @@ const toys=[
 ["Конструкциски блокови","Сортер со форми","Сложувалка со крупни делови","Спарување животни","Кула по големина"],
 ["Сет за игра со готвење","Конструкциски сет","Сложувалка со 6 крупни делови","Сортирање по боја","Сет за практични активности"]];
 const themes=["Откривам и повторувам","Ставање и вадење","Форми и координација","Градам и истражувам","Причина и последица","Редослед и концентрација","Самостојност","Споредувам и групирам","Зборови и предмети","Практичен живот","Решавам проблеми","Посложена игра"];
-const seed=()=>({settings:{price:119,shipping:40,handling:15,buffer:7},customers:[],packages:toys.map((t,i)=>({id:"M"+(i+12),age:i+12,title:themes[i],toys:t,guide:"Развојни активности соодветни на возраста. Секогаш проверете ги упатствата на производителот.",cost:85+i*5})),stock:[],payments:[],expenses:[]});
+const seed=()=>({settings:{price:119,shipping:40,handling:15,buffer:7},customers:[],packages:toys.map((t,i)=>({id:"M"+(i+12),age:i+12,title:themes[i],toys:t,guide:"Развојни активности соодветни на возраста. Секогаш проверете ги упатствата на производителот.",cost:85+i*5})),stock:[],payments:[],expenses:[],operations:[]});
 let db;try{db=JSON.parse(localStorage.getItem(KEY))||seed()}catch{db=seed()}
-db={...seed(),...db};for(const k of ["customers","packages","stock","payments","expenses"])if(!Array.isArray(db[k]))db[k]=[];
+db={...seed(),...db};for(const k of ["customers","packages","stock","payments","expenses","operations"])if(!Array.isArray(db[k]))db[k]=[];
 function save(){localStorage.setItem(KEY,JSON.stringify(db));window.dispatchEvent(new Event("os-change"))}
 const uid=()=>Math.random().toString(36).slice(2,10);
 const money=v=>Number(v||0).toLocaleString("pl-PL",{style:"currency",currency:"PLN"});
@@ -33,7 +33,7 @@ function capacity(id){return db.stock.filter(s=>s.packageId===id&&s.status!=="re
 function peakDemand(id){const events=[];for(const c of db.customers)for(const cy of cycles(c)){if(cy.packageId!==id)continue;let p=padCycle(cy);events.push({t:p.start,d:1},{t:p.end,d:-1})}events.sort((a,b)=>a.t.localeCompare(b.t)||a.d-b.d);let n=0,max=0;for(const e of events){n+=e.d;max=Math.max(max,n)}return max}
 function plan(){return db.packages.map(p=>({...p,have:capacity(p.id),need:peakDemand(p.id),short:Math.max(0,peakDemand(p.id)-capacity(p.id))}))}
 function page(){return document.body.dataset.page||"dashboard"}
-function layout(){const nav=[["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["timeline.html","timeline","calendar-range","Временска линија"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="index.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
+function layout(){const nav=[["timeline.html","timeline","calendar-range","Timeline · Операции"],["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="timeline.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
 function header(t,s,action=""){document.getElementById("title").textContent=t;document.getElementById("subtitle").textContent=s;document.getElementById("topAction").innerHTML=action}
 function modal(html){const el=document.getElementById("modal");el.classList.remove("hidden");el.innerHTML='<div class="drawer">'+html+'</div>';el.onclick=e=>{if(e.target===el)closeModal()}}
 function closeModal(){document.getElementById("modal").classList.add("hidden")}
@@ -62,49 +62,102 @@ function inventory(){header("Залиха","Секоја физичка копи
 function stockForm(id){const s=db.stock.find(x=>x.id===id)||{code:"SET-"+String(db.stock.length+1).padStart(3,"0"),packageId:"M12",price:85,condition:"Многу добра",status:"ready"};modal('<h2>'+(id?"Уреди сет":"Нов физички сет")+'</h2><form id="stockForm" class="form-grid section">'+field("code","Инвентарен број",s.code)+'<div><label>Тип пакет</label><select name="packageId">'+db.packages.map(p=>'<option value="'+p.id+'">'+p.id+" · "+esc(p.title)+'</option>').join("")+'</select></div>'+field("price","Набавна цена (PLN)",s.price,"number",'min="0" step="0.01"')+field("condition","Состојба",s.condition)+'<div class="wide"><label>Статус</label><select name="status"><option value="ready">Подготвен</option><option value="cleaning">На чистење</option><option value="retired">Повлечен</option></select></div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveStock(\''+(id||"")+'\')">Зачувај</button></footer>');document.querySelector('#stockForm [name="packageId"]').value=s.packageId;document.querySelector('#stockForm [name="status"]').value=s.status}
 function saveStock(id){const f=document.getElementById("stockForm");if(!f.reportValidity())return;const d=formData("stockForm");d.price=Number(d.price);if(id)Object.assign(db.stock.find(x=>x.id===id),d);else db.stock.push({id:uid(),...d});save();closeModal();render()}
 function deleteStock(id){if(!confirmDelete("Да се избрише физичкиот сет?"))return;db.stock=db.stock.filter(x=>x.id!==id);save();render()}
-function rotationOrders(){
- const orders=db.customers.filter(c=>c.status==="active").flatMap(c=>cycles(c).map(cy=>({...cy,customer:c}))).sort((a,b)=>a.start.localeCompare(b.start)||a.id.localeCompare(b.id));
- const pools={};
- for(const p of db.packages){pools[p.id]=db.stock.filter(s=>s.packageId===p.id&&s.status!=="retired").map(s=>({code:s.code,readyFrom:"0001-01-01",status:s.status}));}
- const buffer=Math.max(7,Number(db.settings.buffer||7)),decisions=[];
+
+const DAY=86400000;
+const plusDays=(d,n)=>iso(new Date(date(d).getTime()+n*DAY));
+const turnaround=()=>Math.max(7,Number(db.settings.buffer||7));
+function operationalPlan(){
+ const customers=db.customers.filter(c=>c.status==="active");
+ const orders=customers.flatMap(c=>cycles(c).map(cy=>({...cy,customer:c,dispatch:plusDays(cy.start,-2)}))).sort((a,b)=>a.dispatch.localeCompare(b.dispatch)||a.id.localeCompare(b.id));
+ const operationMap=new Map(db.operations.map(o=>[o.id,o]));
+ const pool={};
+ for(const p of db.packages)pool[p.id]=db.stock.filter(s=>s.packageId===p.id&&s.status!=="retired").map(s=>({id:s.id,code:s.code,status:s.status,free:"0001-01-01"}));
+ const output=[];
  for(const order of orders){
-   const pool=pools[order.packageId]||[];
-   const available=pool.filter(s=>s.readyFrom<=order.start).sort((a,b)=>a.readyFrom.localeCompare(b.readyFrom));
-   const kit=available.find(s=>s.status==="ready")||available[0];
-   const lastFinish=pool.length?pool.map(s=>s.readyFrom).sort()[0]:null;
-   const status=!kit?"missing":kit.status==="cleaning"?"risk":"ready";
-   const dispatch=iso(new Date(date(order.start).getTime()-2*86400000));
-   const prepStart=kit&&kit.readyFrom>"0001-01-01"?iso(new Date(date(kit.readyFrom).getTime()-buffer*86400000)):null;
-   const reason=status==="missing"?"Нема слободна копија на датумот на испорака. Следна достапност: "+(lastFinish||"потребна набавка"):status==="risk"?"Сетот е означен „на чистење“ и бара физичка потврда.":"Планирана копија — потребна е потврда за испорака.";
-   if(kit)kit.readyFrom=iso(new Date(date(order.end).getTime()+buffer*86400000));
-   decisions.push({...order,status,code:kit?kit.code:"—",dispatch,prepStart,readyDate:kit?kit.readyFrom:null,reason,buffer,address:order.customer.address||"Недостасува адреса"});
+  const op=operationMap.get(order.id)||{};
+  const candidates=pool[order.packageId]||[];
+  let kit=null;
+  if(op.stockId)kit=candidates.find(s=>s.id===op.stockId);
+  if(!kit&&!op.stockId){
+    kit=candidates.filter(s=>s.free<=order.dispatch).sort((a,b)=>a.free.localeCompare(b.free))[0]||null;
+  }
+  let conflict=!!kit&&kit.free>order.dispatch;
+  const blockedByReturn=!!kit&&kit.free==="9999-12-31";
+  let state=!kit||conflict?"missing":kit.status==="cleaning"?"risk":"ready";
+  if(op.step==="shipped"||op.step==="delivered")state="transit";
+  if(op.step==="returned")state="processing";
+  if(op.step==="cleaned")state="done";
+  let description=!kit?"Нема физички сет. Потребна е набавка.":conflict?"Избраниот сет не е слободен за овој термин.":"Сетот е планиран; провери ја адресата и подготви ја испораката.";
+  if(kit){
+    // A dispatched kit stays blocked until a return is recorded. Future planning uses the
+    // expected return date plus a full turnaround window.
+    const returnDay=op.returnedAt||order.end;
+    let nextFree=plusDays(returnDay,turnaround());
+    if((op.step==="shipped"||op.step==="delivered")&&date(order.end)<new Date())nextFree="9999-12-31";
+    if(op.step==="returned"&&op.returnedAt)nextFree=plusDays(op.returnedAt,turnaround());
+    if(op.step==="cleaned"&&op.cleanedAt)nextFree=[plusDays(op.returnedAt||order.end,turnaround()),op.cleanedAt].sort().at(-1);
+    kit.free=nextFree;
+  }
+  const deliveryAddress=order.customer.address||"Нема внесена адреса";
+  const status=op.step||"planned";
+  output.push({...order,stockId:kit?.id||"",code:kit?.code||"—",state,status,description,conflict,blockedByReturn,address:deliveryAddress,returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?.free||"",buffer:turnaround()});
  }
- return decisions;
+ return output;
+}
+function rotationOrders(){return operationalPlan();}
+function operationUpdate(id,step){
+ const rows=operationalPlan(),o=rows.find(x=>x.id===id);if(!o)return;
+ const existing=db.operations.find(x=>x.id===id);
+ const op=existing||{id,stockId:o.stockId,step:"planned"};
+ if(!o.stockId){alert("Нема доделен физички сет. Прво набави и регистрирај копија во Залиха.");return}
+ if(o.conflict){alert("Конфликт во залихата. Овој сет веќе е резервиран во истиот период.");return}
+ if(step==="shipped"&&(!o.customer.address||o.customer.address.trim()==="")){alert("Внеси адреса на клиентот пред испраќање.");return}
+ const allowed={planned:["shipped"],shipped:["delivered","returned"],delivered:["returned"],returned:["cleaned"],cleaned:[]};
+ if(!(allowed[op.step]||[]).includes(step)){alert("Чекорот не може да се потврди во оваа фаза.");return}
+ if(step==="returned")op.returnedAt=iso(new Date());
+ if(step==="cleaned"){
+   if(!op.returnedAt){alert("Прво потврди враќање.");return}
+   op.cleanedAt=iso(new Date());
+ }
+ op.step=step;
+ if(!existing)db.operations.push(op);
+ save();closeModal();render();rotationDetail(id);
+}
+function updateTracking(id){
+ const el=document.getElementById("trackingInput");if(!el)return;
+ let op=db.operations.find(x=>x.id===id);
+ if(!op){const row=operationalPlan().find(x=>x.id===id);op={id,stockId:row?.stockId||"",step:"planned"};db.operations.push(op)}
+ op.tracking=el.value.trim().slice(0,100);save();closeModal();rotationDetail(id);
 }
 function timeline(){
- header("Ротација и испораки","Календар со 7 дена за подготовка, физички сетови и адреси за достава.");
+ header("Оперативен Timeline","Доделување сетови, испораки, враќања и подготовка — на едно место.");
  const first=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1)),months=Array.from({length:12},(_,i)=>addMonths(first,i));
- const orders=rotationOrders(),customers=db.customers.filter(c=>c.status==="active");
- const visible=orders.filter(o=>o.start>=first&&o.start<addMonths(first,12));
- const stats={ready:visible.filter(o=>o.status==="ready").length,risk:visible.filter(o=>o.status==="risk").length,missing:visible.filter(o=>o.status==="missing").length};
- const labels={ready:"Планиран",risk:"Проверка",missing:"Недостиг"};
- const icons={ready:"check-circle-2",risk:"alert-triangle",missing:"x-circle"};
- const tableRows=customers.map(c=>'<div class="ops-row"><div class="ops-person"><b>'+esc(c.name)+'</b><small>'+esc(c.child)+'</small></div>'+months.map(m=>{
+ const orders=operationalPlan(),customers=db.customers.filter(c=>c.status==="active");
+ const selected=orders.filter(o=>o.start>=first&&o.start<addMonths(first,12));
+ const counts={ready:selected.filter(o=>o.state==="ready").length,risk:selected.filter(o=>o.state==="risk").length,missing:selected.filter(o=>o.state==="missing").length};
+ const label={ready:"Планиран",risk:"Проверка",missing:"Недостиг",transit:"Испратен",processing:"Вратен",done:"Подготвен"};
+ const icon={ready:"check-circle-2",risk:"alert-triangle",missing:"x-circle",transit:"truck",processing:"package-open",done:"check-check"};
+ const rows=customers.map(c=>'<div class="ops-row"><div class="ops-person"><b>'+esc(c.name)+'</b><small>'+esc(c.child)+'</small></div>'+months.map(m=>{
  const o=orders.find(o=>o.customer.id===c.id&&o.start>=m&&o.start<addMonths(m,1));
- return '<div class="ops-slot">'+(o?'<button class="ops-event '+o.status+'" onclick="rotationDetail(\''+o.id+'\')" title="'+esc(o.reason)+'"><span class="ops-kit"><b>'+o.packageId+'</b><i data-lucide="'+icons[o.status]+'"></i></span><span>'+o.start.slice(8,10)+' '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</span><strong>'+labels[o.status]+'</strong></button>':'<span class="ops-none">—</span>')+'</div>'}).join("")+'</div>').join("");
- const dispatches=visible.slice().sort((a,b)=>a.dispatch.localeCompare(b.dispatch)).slice(0,25);
+ return '<div class="ops-slot">'+(o?'<button class="ops-event '+o.state+'" onclick="rotationDetail(\''+o.id+'\')"><span class="ops-kit"><b>'+o.packageId+'</b><i data-lucide="'+icon[o.state]+'"></i></span><span>'+o.start.slice(8,10)+' '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</span><strong>'+label[o.state]+'</strong></button>':'<span class="ops-none">—</span>')+'</div>'}).join("")+'</div>').join("");
+ const deliveries=selected.slice().sort((a,b)=>a.dispatch.localeCompare(b.dispatch)).slice(0,80);
  document.getElementById("content").innerHTML=
- '<div class="ops-toolbar"><div class="ops-metrics"><div><span>Планирани замени</span><b>'+stats.ready+'</b></div><div><span>Потребна проверка</span><b>'+stats.risk+'</b></div><div><span>Без сет</span><b>'+stats.missing+'</b></div></div><div class="ops-rule"><i data-lucide="clock-3"></i> Минимум '+Math.max(7,Number(db.settings.buffer||7))+' дена меѓу враќање и повторна употреба</div></div>'+
- '<section class="ops-section"><div class="ops-heading"><div><h2>Временска линија на замени</h2><p>Еден блок = нов пакет за клиентот во тој месец. Кликни за детали за сетот и доставата.</p></div><span class="ops-live">12 месеци</span></div><div class="ops-timeline-scroll"><div class="ops-table"><div class="ops-head"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"short",year:"numeric"})+'</div>').join("")+'</div>'+tableRows+'</div></div></section>'+
- '<section class="ops-section"><div class="ops-heading"><div><h2>Распоред за испораки</h2><p>Кому оди пакетот, кога се испраќа и на која адреса.</p></div></div><div class="table-wrap"><table><thead><tr><th>Испрати до</th><th>Клиент / адреса</th><th>Пакет</th><th>Сет</th><th>Статус</th><th></th></tr></thead><tbody>'+dispatches.map(o=>'<tr><td>'+esc(o.dispatch)+'</td><td><b>'+esc(o.customer.name)+'</b><p class="small">'+esc(o.address)+'</p></td><td>'+o.packageId+'</td><td>'+esc(o.code)+'</td><td><span class="tag '+(o.status==="missing"?"bad":o.status==="risk"?"warn":"")+'">'+labels[o.status]+'</span></td><td><button class="btn light sm" onclick="rotationDetail(\''+o.id+'\')">Детали</button></td></tr>').join("")+'</tbody></table></div></section>'+
- '<p class="ops-disclaimer">Планските датуми за испраќање се 2 дена пред почеток на циклусот (ориентационо). Враќањата, чистењето и InPost испораките не се потврдуваат автоматски. Новите циклуси може да бараат дополнителни копии и пред почетокот на месецот.</p>';
+ '<div class="ops-toolbar"><div class="ops-metrics"><div><span>Планирани</span><b>'+counts.ready+'</b></div><div><span>Проверка</span><b>'+counts.risk+'</b></div><div><span>Недостиг</span><b>'+counts.missing+'</b></div></div><div class="ops-rule"><i data-lucide="clock-3"></i> '+turnaround()+' дена подготовка по враќање</div></div>'+
+ '<section class="ops-section"><div class="ops-heading"><div><h2>Timeline на клиенти и физички сетови</h2><p>Кликни на циклус за да управуваш со неговите операции.</p></div><span class="ops-live">12 месеци</span></div><div class="ops-timeline-scroll"><div class="ops-table"><div class="ops-head"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"short",year:"numeric"})+'</div>').join("")+'</div>'+rows+'</div></div></section>'+
+ '<section class="ops-section"><div class="ops-heading"><div><h2>Оперативна листа за испораки и враќања</h2><p>Вистинските потврди се внесуваат преку „Управувај“.</p></div></div><div class="table-wrap"><table><thead><tr><th>Планирано испраќање</th><th>Клиент / адреса</th><th>Пакет</th><th>Физички сет</th><th>Операција</th><th></th></tr></thead><tbody>'+deliveries.map(o=>'<tr><td>'+o.dispatch+'</td><td><b>'+esc(o.customer.name)+'</b><p class="small">'+esc(o.address)+'</p></td><td>'+o.packageId+'</td><td>'+esc(o.code)+'</td><td><span class="tag '+(o.state==="missing"?"bad":o.state==="risk"?"warn":"")+'">'+label[o.state]+'</span></td><td><button class="btn light sm" onclick="rotationDetail(\''+o.id+'\')">Управувај</button></td></tr>').join("")+'</tbody></table></div></section>'+
+ '<p class="ops-disclaimer">Важно: датумите за испраќање се ориентир (2 дена пред почетокот). За повторна употреба се бара минимум 7 дена по враќање; статусите се зачувуваат локално и не претставуваат автоматско InPost следење или cloud синхронизација.</p>';
 }
 function rotationDetail(id){
- const o=rotationOrders().find(x=>x.id===id);if(!o)return;
- const label={ready:"Планиран сет",risk:"Потребна проверка",missing:"Недостиг од сет"}[o.status];
- modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>'+label+'</p><div class="ops-detail">'+
- [['Дете',o.customer.child],['Физички сет',o.code],['Испрати најдоцна',o.dispatch],['Почеток на циклус',o.start],['Очекувано враќање',o.end],['Подготовка по враќање',o.buffer+' дена'],['Нареден можен термин за сетот',o.readyDate||'Не е достапен'],['Адреса за доставување',o.address],['Напомена',o.reason]].map(x=>'<div><span>'+x[0]+'</span><strong>'+esc(x[1])+'</strong></div>').join('')+'</div><footer><button class="btn light" onclick="closeModal()">Затвори</button></footer>');
+ const o=operationalPlan().find(x=>x.id===id);if(!o)return;
+ const steps={planned:"Планирано",shipped:"Испратено",delivered:"Доставено",returned:"Вратено",cleaned:"Исчистено"};
+ const actions={planned:[["shipped","Потврди испраќање"]],shipped:[["delivered","Потврди достава"],["returned","Потврди враќање"]],delivered:[["returned","Потврди враќање"]],returned:[["cleaned","Потврди чистење"]],cleaned:[]};
+ const fields=[["Дете",o.customer.child],["Пакет",o.packageId],["Физички сет",o.code],["Испрати до",o.dispatch],["Почеток",o.start],["Очекувано враќање",o.end],["Вратено на",o.returnedAt||"Не е потврдено"],["Подготвен најрано",o.readyAfter||"Нема"],["Адреса",o.address],["Состојба",o.description]];
+ modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>Оперативен статус: <b>'+steps[o.status]+'</b></p><div class="ops-detail">'+fields.map(f=>'<div><span>'+f[0]+'</span><strong>'+esc(f[1])+'</strong></div>').join("")+'</div>'+
+ '<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
+ '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+
+ (o.state!=="missing"?actions[o.status].map(a=>'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\''+a[0]+'\')">'+a[1]+'</button>').join(""):'<a class="btn" href="inventory.html">Внеси нов сет</a>')+'</footer>');
 }
+
 function finances(){header("Финансии","Евиденција на наплати, расходи и предвиден приход.",'<div class="flex"><button class="btn light" onclick="transactionForm(\'expense\')">+ Трошок</button><button class="btn" onclick="transactionForm(\'payment\')">+ Наплата</button></div>');const payments=db.payments.reduce((s,x)=>s+Number(x.amount),0),expenses=db.expenses.reduce((s,x)=>s+Number(x.amount),0),monthly=db.customers.filter(c=>c.status==="active").length*db.settings.price;document.getElementById("content").innerHTML='<div class="grid">'+[["Евидентирани наплати",money(payments)],["Евидентирани трошоци",money(expenses)],["Салдо",money(payments-expenses)],["Планирана месечна наплата",money(monthly)]].map(a=>'<div class="card"><span class="muted small">'+a[0]+'</span><div class="metric">'+a[1]+'</div></div>').join("")+'</div><div class="section card"><h2>Трансакции</h2><div class="table-wrap"><table><thead><tr><th>Датум</th><th>Вид</th><th>Опис</th><th>Износ</th><th>Акции</th></tr></thead><tbody>'+[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date)).map(x=>'<tr><td>'+x.date+'</td><td>'+(x.type==="payment"?"Наплата":"Трошок")+'</td><td>'+esc(x.description)+'</td><td>'+money(x.amount)+'</td><td><button class="btn danger sm" onclick="deleteTransaction(\''+x.type+'\',\''+x.id+'\')">Избриши</button></td></tr>').join("")+'</tbody></table></div></div><div class="note warning">Наплатите се евидентираат рачно. Нема поврзана платежна услуга или автоматско книжење.</div>'}
 function transactionForm(type){modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
 function saveTransaction(type){const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
