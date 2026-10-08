@@ -291,3 +291,27 @@ body{overflow-x:hidden}
 body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) #content{padding:18px 26px 32px!important}
 body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) .top{min-height:84px}
 @media(max-width:800px){body:not([data-page="dashboard"]):not([data-page="timeline"]):not([data-page="signup"]) #content{padding:14px!important}}
+
+/* Unified Airtable-like full-bleed workspace for ALL admin pages */
+body:not([data-page="signup"]) .main{padding:0 0 28px!important;width:auto;max-width:none!important}
+body:not([data-page="signup"]) #content{padding:0!important;margin:0!important;width:100%;max-width:none}
+body:not([data-page="signup"]) .top{padding:20px 28px!important;margin:0!important;min-height:85px}
+body:not([data-page="signup"]) #content>.card,body:not([data-page="signup"]) #content>.section.card,body:not([data-page="signup"]) #content>.two{background:#fff;border:0;border-radius:0;box-shadow:none;margin:0!important;padding:0!important;width:100%}
+body:not([data-page="signup"]) #content>.card>.table-wrap,body:not([data-page="signup"]) #content>.table-wrap{border:0;border-radius:0;background:white}
+body:not([data-page="signup"]) #content>.section.card{border-top:1px solid var(--ts-border);padding:18px 28px!important}
+body:not([data-page="signup"]) #content>.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+body:not([data-page="signup"]) #content>.two>.card{padding:24px 28px!important;border:0;border-right:1px solid var(--ts-border);border-radius:0;background:#fff;box-shadow:none}
+.work-surface{width:100%;background:white;min-height:calc(100vh - 86px)}
+.work-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 28px;border-bottom:1px solid var(--ts-border);background:#fff}
+.work-bar strong{font:700 16px Nunito,sans-serif}.work-bar span{font-size:12px;color:var(--ts-subtext)}.work-bar-second{border-top:1px solid var(--ts-border)}
+.work-scroll{width:100%;overflow:auto}.work-table{width:100%;border-collapse:collapse;background:white;min-width:850px}
+.work-table th{position:sticky;top:0;z-index:1;background:var(--ts-muted);white-space:nowrap;font-size:12px}
+.work-table td,.work-table th{padding:12px 18px;border-bottom:1px solid var(--ts-divider);vertical-align:middle}
+.work-table tbody tr:hover{background:var(--ts-muted)}.work-table strong{font-weight:650}
+.work-table td:last-child{text-align:right;white-space:nowrap}
+.work-toys{min-width:380px;max-width:640px;line-height:1.7}.work-toys span{display:inline-block;background:var(--ts-muted);padding:3px 7px;border-radius:6px;border:1px solid var(--ts-border);font-size:11px;margin:2px 4px 2px 0}
+.work-stats{display:flex;border-bottom:1px solid var(--ts-border);gap:0}.work-stats>span{padding:17px 28px;border-right:1px solid var(--ts-border);display:flex;gap:14px;align-items:center;color:var(--ts-subtext);font-size:12px}.work-stats strong{font-size:21px;color:var(--ts-forest)}
+.work-settings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:20px;padding:24px 28px}.work-settings-actions{grid-column:1/-1}
+.work-actions{padding:20px 28px;display:flex;gap:9px;flex-wrap:wrap}
+@media(max-width:1000px){.work-settings{grid-template-columns:repeat(2,minmax(0,1fr))}body:not([data-page="signup"]) #content>.two{grid-template-columns:1fr}}
+@media(max-width:650px){.work-settings{grid-template-columns:1fr;padding:18px}.work-bar,.work-actions{padding-left:16px;padding-right:16px}.work-stats{flex-wrap:wrap}.work-stats>span{padding:10px 15px}.top{padding:16px!important}}
