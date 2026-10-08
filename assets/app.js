@@ -33,14 +33,14 @@ function capacity(id){return db.stock.filter(s=>s.packageId===id&&s.status!=="re
 function peakDemand(id){const events=[];for(const c of db.customers)for(const cy of cycles(c)){if(cy.packageId!==id)continue;let p=padCycle(cy);events.push({t:p.start,d:1},{t:p.end,d:-1})}events.sort((a,b)=>a.t.localeCompare(b.t)||a.d-b.d);let n=0,max=0;for(const e of events){n+=e.d;max=Math.max(max,n)}return max}
 function plan(){return db.packages.map(p=>({...p,have:capacity(p.id),need:peakDemand(p.id),short:Math.max(0,peakDemand(p.id)-capacity(p.id))}))}
 function page(){return document.body.dataset.page||"dashboard"}
-function layout(){const nav=[["timeline.html","timeline","calendar-range","Timeline · Операции"],["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="timeline.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
+function layout(){const nav=[["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="index.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
 function header(t,s,action=""){document.getElementById("title").textContent=t;document.getElementById("subtitle").textContent=s;document.getElementById("topAction").innerHTML=action}
 function modal(html){const el=document.getElementById("modal");el.classList.remove("hidden");el.innerHTML='<div class="drawer">'+html+'</div>';el.onclick=e=>{if(e.target===el)closeModal()}}
 function closeModal(){document.getElementById("modal").classList.add("hidden")}
 function field(name,label,value="",type="text",extra=""){return '<div><label>'+label+'</label><input class="input" name="'+name+'" type="'+type+'" value="'+esc(value)+'" '+extra+' required></div>'}
 function formData(id){return Object.fromEntries(new FormData(document.getElementById(id)).entries())}
 function confirmDelete(message){return confirm(message)}
-function render(){const p=page();if(p==="dashboard")dashboard();if(p==="customers")customers();if(p==="packages")packages();if(p==="inventory")inventory();if(p==="timeline")timeline();if(p==="finances")finances();if(p==="settings")settings();if(p==="signup")signup()}
+function render(){const p=page();if(p==="dashboard")timeline();if(p==="customers")customers();if(p==="packages")packages();if(p==="inventory")inventory();if(p==="timeline")timeline();if(p==="finances")finances();if(p==="settings")settings();if(p==="signup")signup()}
 function dashboard(){
  header("Контролна табла","Оперативен преглед на Montessori претплатите и ротациите");
  const active=db.customers.filter(c=>c.status==="active").length,short=plan().reduce((a,p)=>a+p.short,0);
@@ -130,39 +130,37 @@ function updateTracking(id){
  op.tracking=el.value.trim().slice(0,100);save();closeModal();rotationDetail(id);
 }
 function timeline(){
- header("Оперативен Timeline","Доделување сетови, испораки, враќања и подготовка — на едно место.");
- const first=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1)),months=Array.from({length:12},(_,i)=>addMonths(first,i));
- const orders=operationalPlan(),customers=db.customers.filter(c=>c.status==="active");
- const selected=orders.filter(o=>o.start>=first&&o.start<addMonths(first,12));
- const counts={ready:selected.filter(o=>o.state==="ready").length,risk:selected.filter(o=>o.state==="risk").length,missing:selected.filter(o=>o.state==="missing").length};
- const label={ready:"Планиран",risk:"Проверка",missing:"Недостиг",transit:"Испратен",processing:"Вратен",done:"Подготвен"};
- const icon={ready:"check-circle-2",risk:"alert-triangle",missing:"x-circle",transit:"truck",processing:"package-open",done:"check-check"};
- const rows=customers.map(c=>'<div class="ops-row"><div class="ops-person"><b>'+esc(c.name)+'</b><small>'+esc(c.child)+'</small></div>'+months.map(m=>{
- const o=orders.find(o=>o.customer.id===c.id&&o.start>=m&&o.start<addMonths(m,1));
- return '<div class="ops-slot">'+(o?'<button class="ops-event '+o.state+'" onclick="rotationDetail(\''+o.id+'\')"><span class="ops-kit"><b>'+o.packageId+'</b><i data-lucide="'+icon[o.state]+'"></i></span><span>'+o.start.slice(8,10)+' '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</span><strong>'+label[o.state]+'</strong></button>':'<span class="ops-none">—</span>')+'</div>'}).join("")+'</div>').join("");
- const deliveries=selected.slice().sort((a,b)=>a.dispatch.localeCompare(b.dispatch)).slice(0,80);
- document.getElementById("content").innerHTML=
- '<div class="ops-toolbar"><div class="ops-metrics"><div><span>Планирани</span><b>'+counts.ready+'</b></div><div><span>Проверка</span><b>'+counts.risk+'</b></div><div><span>Недостиг</span><b>'+counts.missing+'</b></div></div><div class="ops-rule"><i data-lucide="clock-3"></i> '+turnaround()+' дена подготовка по враќање</div></div>'+
- '<section class="ops-section"><div class="ops-heading"><div><h2>Timeline на клиенти и физички сетови</h2><p>Кликни на циклус за да управуваш со неговите операции.</p></div><span class="ops-live">12 месеци</span></div><div class="ops-timeline-scroll"><div class="ops-table"><div class="ops-head"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"short",year:"numeric"})+'</div>').join("")+'</div>'+rows+'</div></div></section>'+
- '<section class="ops-section"><div class="ops-heading"><div><h2>Оперативна листа за испораки и враќања</h2><p>Вистинските потврди се внесуваат преку „Управувај“.</p></div></div><div class="table-wrap"><table><thead><tr><th>Планирано испраќање</th><th>Клиент / адреса</th><th>Пакет</th><th>Физички сет</th><th>Операција</th><th></th></tr></thead><tbody>'+deliveries.map(o=>'<tr><td>'+o.dispatch+'</td><td><b>'+esc(o.customer.name)+'</b><p class="small">'+esc(o.address)+'</p></td><td>'+o.packageId+'</td><td>'+esc(o.code)+'</td><td><span class="tag '+(o.state==="missing"?"bad":o.state==="risk"?"warn":"")+'">'+label[o.state]+'</span></td><td><button class="btn light sm" onclick="rotationDetail(\''+o.id+'\')">Управувај</button></td></tr>').join("")+'</tbody></table></div></section>'+
- '<p class="ops-disclaimer">Важно: датумите за испраќање се ориентир (2 дена пред почетокот). За повторна употреба се бара минимум 7 дена по враќање; статусите се зачувуваат локално и не претставуваат автоматско InPost следење или cloud синхронизација.</p>';
+ const view=localStorage.getItem("toysharing_timeline_range")==="1"?1:2;
+ const start=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1));
+ const end=addMonths(start,view),orders=operationalPlan();
+ const visible=orders.filter(o=>o.start>=start&&o.start<end);
+ const today=iso(new Date());
+ // A package is actionable only when it has a physical set, an address,
+ // enough prep time before outbound shipping, and confirmed workflow steps.
+ const classify=o=>{
+   if(o.state==="missing"||o.conflict)return {key:"missing",text:"Недостиг",why:"Нема слободна физичка копија за овој циклус."};
+   if(!o.customer.address)return {key:"risk",text:"Ризик",why:"Недостасува адреса за испорака."};
+   if(o.state==="risk")return {key:"risk",text:"Ризик",why:"Сетот е на чистење и нема потврда дека е подготвен."};
+   if((o.status==="planned")&&o.dispatch<=today)return {key:"risk",text:"Ризик",why:"Рокот за испраќање е достигнат или поминат."};
+   if(o.status==="returned")return {key:"risk",text:"За подготовка",why:"Вратен сет — потребна е проверка и чистење."};
+   return {key:"ready",text:({planned:"Планиран",shipped:"Испратен",delivered:"Доставен",cleaned:"Подготвен"})[o.status]||"Планиран",why:"Сетот е резервиран и во планираниот циклус."};
+ };
+ const flagged=visible.filter(o=>classify(o).key!=="ready");
+ const status=o=>{const c=classify(o);return '<span class="air-status '+c.key+'" title="'+esc(c.why)+'"><i data-lucide="'+(c.key==="ready"?"check-circle-2":c.key==="risk"?"alert-triangle":"x-circle")+'"></i>'+c.text+'</span>'};
+ const months=Array.from({length:view},(_,i)=>addMonths(start,i));
+ const grid='<div class="air-grid-scroll"><div class="air-grid"><div class="air-grid-header"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"})+'</div>').join("")+'</div>'+
+ db.customers.filter(c=>c.status==="active").map(c=>'<div class="air-grid-row"><div class="air-grid-client"><b>'+esc(c.name)+'</b><span>'+esc(c.child)+'</span></div>'+months.map(m=>{const o=visible.find(x=>x.customer.id===c.id&&x.start>=m&&x.start<addMonths(m,1));if(!o)return '<div class="air-grid-slot"><span class="air-faint">—</span></div>';const cl=classify(o);return '<div class="air-grid-slot"><button class="air-cycle '+cl.key+'" onclick="rotationDetail(\''+o.id+'\')"><span><b>'+o.packageId+'</b><small>'+o.start.slice(8,10)+'. '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</small></span>'+status(o)+'</button></div>'}).join("")+'</div>').join("")+'</div></div>';
+ const table='<div class="air-table-scroll"><table class="air-data"><thead><tr><th>Датум за испраќање</th><th>Клиент / дете</th><th>Пакет</th><th>Физички сет</th><th>Адреса</th><th>Статус</th><th></th></tr></thead><tbody>'+visible.slice().sort((x,y)=>x.dispatch.localeCompare(y.dispatch)).map(o=>'<tr><td>'+esc(o.dispatch)+'</td><td><strong>'+esc(o.customer.name)+'</strong><small>'+esc(o.customer.child)+'</small></td><td><b>'+o.packageId+'</b></td><td>'+esc(o.code)+'</td><td class="air-address">'+esc(o.address)+'</td><td>'+status(o)+'</td><td><button class="air-link" onclick="rotationDetail(\''+o.id+'\')">Управувај <i data-lucide="chevron-right"></i></button></td></tr>').join("")+'</tbody></table></div>';
+ header("Преглед · Timeline","Оперативен преглед на пакетите, адресите и ротациите.");
+ document.getElementById("topAction").innerHTML='<div class="air-range"><button class="'+(view===1?"active":"")+'" onclick="timelineRange(1)">Овој месец</button><button class="'+(view===2?"active":"")+'" onclick="timelineRange(2)">Следни 2 месеци</button></div>';
+ document.getElementById("content").innerHTML='<div class="air-workspace">'+
+ '<div class="air-metrics"><div><span>Замени</span><strong>'+visible.length+'</strong></div><div><span>Без ризик</span><strong>'+visible.filter(o=>classify(o).key==="ready").length+'</strong></div><div><span>Бараат внимание</span><strong class="air-attention">'+flagged.length+'</strong></div><div class="air-rule"><i data-lucide="clock-3"></i> '+turnaround()+' дена подготовка по враќање</div></div>'+
+ '<div class="air-section-title"><h2>Timeline по клиенти</h2><span>Кликни на пакет за управување со испораката</span></div>'+grid+
+ '<div class="air-section-title"><h2>Испораки и ротации</h2><span>'+visible.length+' циклуси · '+flagged.length+' за проверка</span></div>'+table+
+ '<div class="air-footnote">Ова е план со локално зачувани операции. Зелениот статус е планска достапност, не потврдена InPost испорака. Ризиците се проверуваат за секој конкретен циклус.</div></div>';
 }
-function assignKit(id){
- const select=document.getElementById("physicalKitChoice");if(!select)return;
- const row=operationalPlan().find(o=>o.id===id);if(!row)return;
- const stockId=select.value;
- const record=db.operations.find(o=>o.id===id)||{id,step:"planned"};
- if(record.step!=="planned"){alert("Не можеш да го смениш физичкиот сет откако е испратен.");return}
- if(stockId){
-   const s=db.stock.find(x=>x.id===stockId);
-   if(!s||s.packageId!==row.packageId||s.status==="retired"){alert("Невалидна физичка копија.");return}
- }
- record.stockId=stockId;
- if(!db.operations.some(o=>o.id===id))db.operations.push(record);
- const test=operationalPlan().find(o=>o.id===id);
- if(test&&test.conflict){if(!db.operations.some(o=>o.id===id))db.operations.push(record);record.stockId=row.opStockId||"";alert("Овој сет се преклопува со друга резервација. Пробај друга копија.");return}
- save();closeModal();render();rotationDetail(id);
-}
+function timelineRange(months){localStorage.setItem("toysharing_timeline_range",String(months));timeline();}
+
 function rotationDetail(id){
  const o=operationalPlan().find(x=>x.id===id);if(!o)return;
  const steps={planned:"Планирано",shipped:"Испратено",delivered:"Доставено",returned:"Вратено",cleaned:"Исчистено"};
