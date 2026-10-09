@@ -354,3 +354,54 @@ h1,h2,h3,.brand{font-family:'Nunito',system-ui,sans-serif!important}
 .public-page{background:var(--ts-cream)}
 .public-card .note{border-left:3px solid var(--ts-honey)}
 :focus-visible{outline-color:var(--ts-sage)}
+
+/* Canonical edge-to-edge workspace — all admin pages */
+:root{--sidebar-width:256px}
+html,body,#root{width:100%;min-width:0;min-height:100%;margin:0}
+body{overflow-x:hidden}
+body:not([data-page="signup"]) #root{min-height:100vh}
+body:not([data-page="signup"]) .app{display:grid!important;grid-template-columns:var(--sidebar-width) minmax(0,1fr);align-items:stretch!important;justify-content:stretch!important;width:100%;min-width:0;max-width:none!important;min-height:100vh;margin:0!important}
+body:not([data-page="signup"]) .sidebar{grid-column:1;width:var(--sidebar-width)!important;min-width:0!important;max-width:none!important;height:100vh;position:sticky;top:0;overflow-y:auto}
+body:not([data-page="signup"]) .main{grid-column:2;display:block!important;width:100%!important;min-width:0!important;max-width:none!important;min-height:100vh;align-self:stretch!important;margin:0!important;padding:0!important;overflow:visible!important;background:white}
+body:not([data-page="signup"]) .top{width:100%!important;max-width:none!important;box-sizing:border-box;margin:0!important;padding:20px 24px!important;min-height:80px;background:#fff;border-bottom:1px solid var(--ts-border)}
+body:not([data-page="signup"]) #content{display:block;width:100%!important;min-width:0!important;max-width:none!important;box-sizing:border-box;margin:0!important;padding:0!important;background:white}
+body:not([data-page="signup"]) #content>*{max-width:none!important;box-sizing:border-box}
+body:not([data-page="signup"]) .work-surface,
+body:not([data-page="signup"]) .air-workspace,
+body:not([data-page="signup"]) .work-scroll,
+body:not([data-page="signup"]) .air-table-scroll,
+body:not([data-page="signup"]) .air-grid-scroll,
+body:not([data-page="signup"]) .table-wrap,
+body:not([data-page="signup"]) .ops-timeline-scroll{width:100%!important;max-width:none!important;min-width:0!important;margin-left:0!important;margin-right:0!important;box-sizing:border-box}
+body:not([data-page="signup"]) .work-surface{min-height:calc(100vh - 80px);padding:0!important;border:0!important;border-radius:0!important}
+body:not([data-page="signup"]) .work-scroll,
+body:not([data-page="signup"]) .air-table-scroll,
+body:not([data-page="signup"]) .air-grid-scroll,
+body:not([data-page="signup"]) .table-wrap,
+body:not([data-page="signup"]) .ops-timeline-scroll{overflow-x:auto;overflow-y:visible;border-radius:0!important}
+body:not([data-page="signup"]) .work-table,
+body:not([data-page="signup"]) .air-data,
+body:not([data-page="signup"]) .table-wrap>table{width:100%!important;border-collapse:collapse;table-layout:auto}
+body:not([data-page="signup"]) .work-table{min-width:940px}
+body:not([data-page="signup"]) .air-data{min-width:900px}
+body:not([data-page="signup"]) .work-bar,
+body:not([data-page="signup"]) .air-section-title{width:100%;box-sizing:border-box}
+body:not([data-page="signup"]) .work-bar{padding:16px 24px}
+body:not([data-page="signup"]) .air-section-title{padding:18px 24px 12px}
+body:not([data-page="signup"]) .work-table th,
+body:not([data-page="signup"]) .work-table td,
+body:not([data-page="signup"]) .air-data th,
+body:not([data-page="signup"]) .air-data td{padding:12px 16px}
+body:not([data-page="signup"]) .air-grid{width:100%!important}
+body:not([data-page="signup"]) .work-actions{padding:20px 24px}
+body:not([data-page="signup"]) .work-settings{padding:20px 24px}
+@media(max-width:750px){
+ body:not([data-page="signup"]) .app{display:block!important}
+ body:not([data-page="signup"]) .sidebar{position:relative;top:auto;width:100%!important;height:auto;overflow:visible}
+ body:not([data-page="signup"]) .main{display:block!important;width:100%!important;min-height:calc(100vh - 120px)}
+ body:not([data-page="signup"]) .top{padding:16px!important}
+ body:not([data-page="signup"]) .work-bar{padding:14px 16px}
+ body:not([data-page="signup"]) .air-section-title{padding:16px}
+ body:not([data-page="signup"]) .work-actions,
+ body:not([data-page="signup"]) .work-settings{padding:16px}
+}
