@@ -348,12 +348,13 @@ function timelineRange(months){localStorage.setItem("toysharing_timeline_range",
 function rotationDetail(id){
  const o=operationalPlan().find(x=>x.id===id);if(!o)return;
  const steps={planned:"Планирано",shipped:"Испратено",delivered:"Доставено",returned:"Вратено",cleaned:"Исчистено"};
- const actions={planned:[["shipped","Потврди испраќање"]],shipped:[["delivered","Потврди достава"],["returned","Потврди враќање"]],delivered:[["returned","Потврди враќање"]],returned:[["cleaned","Потврди чистење"]],cleaned:[]};
+
  const fields=[["Дете",o.customer.child],["Пакет",o.packageId],["Физички сет",o.code],["Испрати до",o.dispatch],["Почеток",o.start],["Очекувано враќање",o.end],["Вратено на",o.returnedAt||"Не е потврдено"],["Подготвен најрано",o.readyAfter||"Нема"],["Адреса",o.address],["Состојба",o.description]];
  modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>Оперативен статус: <b>'+steps[o.status]+'</b></p><div class="ops-detail">'+fields.map(f=>'<div><span>'+f[0]+'</span><strong>'+esc(f[1])+'</strong></div>').join("")+'</div>'+
  '<div class="section"><label for="physicalKitChoice">Физички сет · доделување</label><select id="physicalKitChoice" '+(o.status!=="planned"?"disabled":"")+'><option value="">Автоматски избор</option>'+db.stock.filter(s=>s.packageId===o.packageId&&s.status!=="retired").map(s=>'<option value="'+esc(s.id)+'" '+((o.opStockId||o.stockId)===s.id?"selected":"")+'>'+esc(s.code)+'</option>').join("")+'</select><div class="mt"><button class="btn light sm" '+(o.status!=="planned"?"disabled":"")+' onclick="assignKit(\''+o.id+'\')">Зачувај доделување</button></div></div>'+'<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
- '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+ (o.status==="shipped"?'<button class="btn light" data-confirm-id="'+esc(o.id)+'" onclick="deliveryConfirmationLink(this.dataset.confirmId)">QR потврда</button>':'')+
- (o.state!=="missing"?actions[o.status].map(a=>'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\''+a[0]+'\')">'+a[1]+'</button>').join(""):'<a class="btn" href="inventory.html">Внеси нов сет</a>')+'</footer>');
+ '<div class="section"><p class="small muted">Демо: по потврда на испраќање, клиентската достава автоматски се симулира по 30 секунди. Email известување не се испраќа додека не се поврзе email сервис.</p></div>'+
+ '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+
+ (o.status==="planned"&&o.state!=="missing"&&!o.conflict?'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\'shipped\')">Потврди испраќање</button>':'')+'</footer>');
 }
 
 function finances(){
