@@ -111,9 +111,9 @@ function inventory(){
    return '<table class="inventory-kits"><thead><tr><th>Физички сет</th><th>Статус</th><th>Кај кого е / следен клиент</th><th>Период</th><th aria-label="Акција"></th></tr></thead><tbody>'+sets.map(kit=>{
      const holding=holdings.find(h=>h.stockId===kit.id);
      const future=allOrders.find(o=>o.stockId===kit.id&&o.status==="planned"&&o.end>=today);
-     const current=holding?.order,assigned=current||future;
-     const label=current?(holding.step==="shipped"?"Недостапен · Испратен":"Недостапен · Кај клиент"):kit.status==="cleaning"?"На чистење":future?"Резервиран":"Слободен";
-     const kind=current?(holding.step==="shipped"?"status-shipped":"status-client"):kit.status==="cleaning"?"status-cleaning":future?"status-reserved":"status-free";
+     const current=holding?.order,assigned=current;
+     const label=current?(holding.step==="shipped"?"Недостапен · Испратен":"Недостапен · Кај клиент"):kit.status==="cleaning"?"На чистење":"Слободен";
+     const kind=current?(holding.step==="shipped"?"status-shipped":"status-client"):kit.status==="cleaning"?"status-cleaning":"status-free";
      return '<tr><td><strong>'+esc(kit.code)+'</strong></td><td><span class="tag '+kind+'">'+label+'</span></td><td>'+(assigned?esc(assigned.customer.name)+'<small class="work-sub">'+esc(assigned.customer.child)+'</small>':'—')+'</td><td>'+(assigned?esc(assigned.start)+' → '+esc(assigned.end):'—')+'</td><td><button class="air-link" onclick="stockForm(\''+esc(kit.id)+'\')">Уреди сет</button>'+(current?'<button class="air-link" onclick="rotationDetail(\''+esc(current.id)+'\')">Испорака</button>':'')+'</td></tr>';
    }).join("")+'</tbody></table>';
  };
@@ -205,7 +205,7 @@ function operationalPlan(){
    }
    const availability=!kit?(kitPool.length===0?"out-of-stock":kitPool.every(x=>x.status==="cleaning")?"cleaning":"unavailable"):conflict?"unavailable":kit.status==="cleaning"?"cleaning":op.step==="shipped"||op.step==="delivered"?"in-use":"available";
    const description=availability==="out-of-stock"?"Нема физички сет од овој тип во Залиха.":availability==="unavailable"?"Сите сетови се доделени или недостапни за овој период.":availability==="cleaning"?"Сетовите се на чистење.":"Планирана достапност; провери и подготви ја испораката.";
-   result.push({...order,stockId:conflict?"":kit?.id||"",code:conflict?"—":kit?.code||"—",availability,state,status:op.step||"planned",description,conflict,blockedByReturn,address:order.customer.address||"Нема внесена адреса",returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?desired.until:"",buffer:turnaround()});
+   result.push({...order,stockId:conflict?"":kit?.id||"",code:conflict?"—":op.stockId?kit?.code||"—":"—",availability,state,status:op.step||"planned",description,conflict,blockedByReturn,address:order.customer.address||"Нема внесена адреса",returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?desired.until:"",buffer:turnaround()});
  }
  return result;
 }
@@ -221,9 +221,9 @@ function assignKit(id){
  const el=document.getElementById("physicalKitChoice");if(!el)return;
  const row=operationalPlan().find(x=>x.id===id);
  if(!row||row.status!=="planned")return;
- const kitId=el.value||row.stockId;
+ const kitId=el.value;
  const kit=db.stock.find(x=>x.id===kitId&&x.packageId===row.packageId&&x.status!=="retired");
- if(!kit){alert("Избери постоечки сет од Залиха.");return}
+ if(!kit){alert("Избери конкретен физички сет од Залиха.");return}
  if(db.operations.some(op=>op.id!==id&&op.stockId===kitId&&["shipped","delivered","returned"].includes(op.step))){alert("Овој сет не е достапен: доделен е на друг клиент и сè уште не е подготвен.");return}
  const existing=db.operations.find(x=>x.id===id),previous=existing?.stockId;
  if(existing)existing.stockId=kitId;else db.operations.push({id,stockId:kitId,step:"planned"});
@@ -235,7 +235,8 @@ function operationUpdate(id,step){
  const rows=operationalPlan(),o=rows.find(x=>x.id===id);if(!o)return;
  const existing=db.operations.find(x=>x.id===id);
  const op=existing||{id,stockId:o.stockId,step:"planned"};
- if(!o.stockId){alert("Нема доделен физички сет. Прво набави и регистрирај копија во Залиха.");return}
+ if(!o.opStockId){alert("Прво избери и зачувај конкретен физички сет од Залиха за овој клиент.");return}
+ if(!o.stockId){alert("Избраниот сет не е достапен. Провери ја Залихата.");return}
  if(o.conflict){alert("Конфликт во залихата. Овој сет веќе е резервиран во истиот период.");return}
  if(step==="shipped"&&db.stock.find(k=>k.id===o.stockId)?.status==="cleaning"){alert("Сетот е на чистење и не може да се испрати.");return}
  if(step==="shipped"&&shipmentAlreadyUsed(id,o.stockId,iso(new Date()).slice(0,7))){alert("Овој физички сет е веќе испратен во овој месец. Избери друг сет од Залиха.");return}
@@ -362,7 +363,7 @@ function rotationDetail(id){
 
  const fields=[["Дете",o.customer.child],["Пакет",o.packageId],["Физички сет",o.code],["Испрати до",o.dispatch],["Почеток",o.start],["Очекувано враќање",o.end],["Вратено на",o.returnedAt||"Не е потврдено"],["Подготвен најрано",o.readyAfter||"Нема"],["Адреса",o.address],["Состојба",o.description]];
  modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>Оперативен статус: <b>'+steps[o.status]+'</b></p><div class="ops-detail">'+fields.map(f=>'<div><span>'+f[0]+'</span><strong>'+esc(f[1])+'</strong></div>').join("")+'</div>'+
- '<div class="section"><label for="physicalKitChoice">Физички сет · доделување</label><select id="physicalKitChoice" '+(o.status!=="planned"?"disabled":"")+'><option value="">Автоматски избор</option>'+db.stock.filter(s=>s.packageId===o.packageId&&s.status!=="retired").map(s=>'<option value="'+esc(s.id)+'" '+((o.opStockId||o.stockId)===s.id?"selected":"")+'>'+esc(s.code)+'</option>').join("")+'</select><div class="mt"><button class="btn light sm" '+(o.status!=="planned"?"disabled":"")+' onclick="assignKit(\''+o.id+'\')">Зачувај доделување</button></div></div>'+'<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
+ '<div class="section"><label for="physicalKitChoice">Физички сет · доделување</label><select id="physicalKitChoice" '+(o.status!=="planned"?"disabled":"")+'><option value="">Избери физички сет</option>'+db.stock.filter(s=>s.packageId===o.packageId&&s.status!=="retired").map(s=>'<option value="'+esc(s.id)+'" '+(o.opStockId===s.id?"selected":"")+'>'+esc(s.code)+'</option>').join("")+'</select><div class="mt"><button class="btn light sm" '+(o.status!=="planned"?"disabled":"")+' onclick="assignKit(\''+o.id+'\')">Зачувај доделување</button></div></div>'+'<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
  '<div class="section"><p class="small muted">Демо: по потврда на испраќање, клиентската достава автоматски се симулира по 30 секунди. Email известување не се испраќа додека не се поврзе email сервис.</p></div>'+
  '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+
  (o.status==="planned"&&o.state!=="missing"&&!o.conflict?'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\'shipped\')">Потврди испраќање</button>':'')+'</footer>');
@@ -373,7 +374,7 @@ function finances(){
  const payments=db.payments.reduce((n,x)=>n+Number(x.amount),0),expenses=db.expenses.reduce((n,x)=>n+Number(x.amount),0);
  const rows=[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date));
  const ref=x=>[x.packageId||"",x.stockId?(db.stock.find(s=>s.id===x.stockId)?.code||x.stockId):""].filter(Boolean).join(" · ")||"—";
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(payments)+'</strong></span><span>Трошоци <strong>'+money(expenses)+'</strong></span><span>Салдо <strong>'+money(payments-expenses)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table finance-table"><thead><tr><th>Датум</th><th>Вид</th><th>Причина</th><th>Пакет / сет</th><th>Опис</th><th>Износ</th><th aria-label="Акции"></th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.type==="expense"?(x.category||"Друго"):"Претплата")+'</td><td>'+esc(ref(x))+'</td><td>'+esc(x.description||"")+'</td><td>'+money(x.amount)+'</td><td>'+(x.type==="expense"?'<span class="finance-actions"><button class="air-link" onclick="editExpense(\''+x.id+'\')">Уреди</button> <button class="air-link delete-action" onclick="deleteTransaction(\'expense\',\''+x.id+'\')">Избриши</button></span>':'')+'</td></tr>').join('')+'</tbody></table></div></div>';
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(payments)+'</strong></span><span>Трошоци <strong>'+money(expenses)+'</strong></span><span>Салдо <strong>'+money(payments-expenses)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table finance-table"><thead><tr><th>Датум</th><th>Вид</th><th>Причина</th><th>Пакет / сет</th><th>Опис</th><th>Износ</th><th aria-label="Акции"></th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.type==="expense"?(x.category||"Друго"):"Претплата")+'</td><td>'+esc(ref(x))+'</td><td>'+esc((x.description||"").replace(/(Претплата за [^—·]+) — /g,"$1 · "))+'</td><td>'+money(x.amount)+'</td><td>'+(x.type==="expense"?'<span class="finance-actions"><button class="air-link" onclick="editExpense(\''+x.id+'\')">Уреди</button> <button class="air-link delete-action" onclick="deleteTransaction(\'expense\',\''+x.id+'\')">Избриши</button></span>':'')+'</td></tr>').join('')+'</tbody></table></div></div>';
 }
 function expenseStockOptions(packageId){
  const select=document.getElementById("expenseStock");if(!select)return;
@@ -441,7 +442,7 @@ function buildDemo(){
  // M17–M18 prepared for upcoming monthly age progression.
  const ids=["M12","M13","M14","M15","M16","M17","M18"];
  data.stock=ids.map((id,i)=>({id:"demo-s"+i,code:id+"-SET01",packageId:id,price:Number(data.packages.find(p=>p.id===id).cost),condition:"Многу добра",status:"ready"}));
- data.payments=people.map((p,i)=>({id:"demo-pay"+i,date:"2026-10-01",description:"Претплата за октомври — "+p[0],amount:119}));
+ data.payments=people.map((p,i)=>({id:"demo-pay"+i,date:"2026-10-01",description:"Претплата за октомври · "+p[0],amount:119}));
  data.expenses=[
   {id:"demo-exp1",date:"2026-09-28",description:"Набавка на 7 Montessori комплети",amount:ids.reduce((sum,id)=>sum+Number(data.packages.find(p=>p.id===id).cost),0)},
   {id:"demo-exp2",date:"2026-10-01",description:"Амбалажа за 5 стартни испораки",amount:75}
