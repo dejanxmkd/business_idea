@@ -82,9 +82,9 @@ tbody tr:hover{background:#FBFAF7}
 .work-table td:last-child{text-align:right;white-space:nowrap}
 .work-sub,.air-data small{display:block;font-size:12px;color:var(--muted);margin-top:2px}
 .work-toys{min-width:360px;max-width:650px;line-height:2}
-.work-toys span{display:inline-block;margin:3px 4px 3px 0;padding:3px 9px;background:var(--cream);border:1px solid var(--sand);border-radius:6px;color:#6B5A43;font-size:12px}
-.work-toys span:nth-child(3n){background:#FFF4DF;border-color:#F2DCAA}
-.work-toys span:nth-child(4n){background:#FDEEEA;border-color:#F4D3CA}
+.work-toys span{display:inline-block;margin:3px 5px 3px 0;padding:4px 9px;background:#F5F7F2;border:1px solid #E7EAE3;border-radius:6px;color:#526255;font-size:12px;font-weight:700}
+
+
 
 /* KPI: number first, label below */
 .air-metrics,.work-stats{display:flex;flex-wrap:wrap;align-items:stretch;min-height:95px;border-bottom:1px solid var(--line);background:#FCFBF9}
