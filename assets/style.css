@@ -585,3 +585,9 @@ html[data-theme="dark"] .inventory-kits .tag.status-client{background:#527F9D!im
 html[data-theme="dark"] .inventory-kits .tag.status-cleaning{background:#BD7C35!important;color:#FFFFFF!important}
 html[data-theme="dark"] .work-toys .toy-chip,html[data-theme="dark"] .work-toys .toy-chip:nth-child(n),html[data-theme="dark"] .toy-more{background:#E86B5B!important;border:0!important;color:#FFFFFF!important}
 html[data-theme="dark"] .toy-more:hover,html[data-theme="dark"] .toy-more:focus-visible{background:#D85D4F!important}
+
+/* Consistent action-column alignment in Finances */
+.finance-table th:last-child,.finance-table td:last-child{text-align:right!important;width:200px;min-width:200px;padding-right:30px!important}
+.finance-actions{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;white-space:nowrap}
+.finance-actions .air-link{margin:0!important;min-height:34px}
+@media(max-width:780px){.finance-table th:last-child,.finance-table td:last-child{padding-right:16px!important}}
