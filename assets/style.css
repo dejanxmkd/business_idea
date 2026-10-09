@@ -324,3 +324,9 @@ html[data-theme="dark"] .task-priority.danger{color:#F08C83}
 .catalog-tabs a.selected{color:var(--ink);border-bottom-color:var(--coral)}
 html[data-theme="dark"] .catalog-tabs{background:#1B2720}
 @media(max-width:780px){.catalog-tabs{padding:0 16px;gap:17px;overflow-x:auto}}
+
+/* Dark mode: eliminate light separator beneath Operations tabs */
+html[data-theme="dark"] .ops-tabs{border-bottom-color:#34443A!important}
+html[data-theme="dark"] .ops-tabs button{border-bottom-color:transparent}
+html[data-theme="dark"] .ops-tabs button.selected{border-bottom-color:#E86B5B}
+html[data-theme="dark"] .task-sheet,html[data-theme="dark"] .task-head,html[data-theme="dark"] .air-section-title{border-color:#34443A!important}
