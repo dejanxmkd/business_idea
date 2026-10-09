@@ -33,7 +33,7 @@ function capacity(id){return db.stock.filter(s=>s.packageId===id&&s.status!=="re
 function peakDemand(id){const events=[];for(const c of db.customers)for(const cy of cycles(c)){if(cy.packageId!==id)continue;let p=padCycle(cy);events.push({t:p.start,d:1},{t:p.end,d:-1})}events.sort((a,b)=>a.t.localeCompare(b.t)||a.d-b.d);let n=0,max=0;for(const e of events){n+=e.d;max=Math.max(max,n)}return max}
 function plan(){return db.packages.map(p=>({...p,have:capacity(p.id),need:peakDemand(p.id),short:Math.max(0,peakDemand(p.id)-capacity(p.id))}))}
 function page(){return document.body.dataset.page||"dashboard"}
-function layout(){const nav=[["index.html","dashboard","layout-dashboard","Преглед"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="index.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
+function layout(){const nav=[["index.html","dashboard","calendar-check-2","Операции"],["customers.html","customers","users-round","Клиенти"],["packages.html","packages","package","Пакети"],["inventory.html","inventory","boxes","Залиха"],["finances.html","finances","wallet","Финансии"],["settings.html","settings","settings-2","Поставки"]];document.getElementById("root").innerHTML='<div class="app"><aside class="sidebar"><div class="brand"><a href="index.html" class="brand-logo-link" aria-label="ToySharing — Контролна табла"><img src="./assets/ToySharing%20House%20of%20Play.png" class="brand-logo" alt="ToySharing" /></a></div><nav class="nav">'+nav.map(n=>'<a href="'+n[0]+'" class="'+(n[1]===page()?"active":"")+'"><i data-lucide="'+n[2]+'"></i>'+n[3]+'</a>').join("")+'</nav><div class="sidebar-foot">Локална верзија · податоците се во овој прелистувач</div></aside><main class="main"><header class="top"><div><h1 id="title"></h1><p id="subtitle"></p></div><div id="topAction"></div></header><div id="content"></div></main></div><div id="modal" class="drawer-mask hidden"></div>';render()}
 function header(t,s,action=""){document.getElementById("title").textContent=t;document.getElementById("subtitle").textContent=s;document.getElementById("topAction").innerHTML=action}
 function modal(html){const el=document.getElementById("modal");el.classList.remove("hidden");el.innerHTML='<div class="drawer">'+html+'</div>';el.onclick=e=>{if(e.target===el)closeModal()}}
 function closeModal(){document.getElementById("modal").classList.add("hidden")}
@@ -158,6 +158,8 @@ function operationUpdate(id,step){
  if(step==="shipped"&&(!o.customer.address||o.customer.address.trim()==="")){alert("Внеси адреса на клиентот пред испраќање.");return}
  const allowed={planned:["shipped"],shipped:["delivered","returned"],delivered:["returned"],returned:["cleaned"],cleaned:[]};
  if(!(allowed[op.step]||[]).includes(step)){alert("Чекорот не може да се потврди во оваа фаза.");return}
+ if(step==="shipped")op.shippedAt=iso(new Date());
+ if(step==="delivered")op.deliveredAt=iso(new Date());
  if(step==="returned")op.returnedAt=iso(new Date());
  if(step==="cleaned"){
    if(!op.returnedAt){alert("Прво потврди враќање.");return}
@@ -172,6 +174,44 @@ function updateTracking(id){
  let op=db.operations.find(x=>x.id===id);
  if(!op){const row=operationalPlan().find(x=>x.id===id);op={id,stockId:row?.stockId||"",step:"planned"};db.operations.push(op)}
  op.tracking=el.value.trim().slice(0,100);save();closeModal();rotationDetail(id);
+}
+function monthlyTasks(){
+ const start=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1)),end=addMonths(start,1),today=iso(new Date());
+ return operationalPlan().filter(o=>o.dispatch<end&&o.end>=start&&o.status!=="cleaned").map(o=>{
+ let action="",due=o.dispatch,kind="normal";
+ if(o.state==="missing"||o.conflict){action="Обезбеди комплет";kind="danger"}
+ else if(!o.customer.address){action="Внеси адреса";kind="danger"}
+ else if(o.status==="planned"){action=o.state==="risk"?"Провери / подготви комплет":"Подготви и испрати";kind=o.state==="risk"?"warning":"normal"}
+ else if(o.status==="shipped"){action="Чекај потврда за прием";kind="waiting";due=o.start}
+ else if(o.status==="delivered"){action="Закажи враќање";due=o.end}
+ else if(o.status==="returned"){action="Исчисти и провери";due=o.returnedAt||o.end;kind="warning"}
+ return {o,action,due,kind,overdue:due<=today&&kind!=="waiting"}
+ }).filter(x=>x.action).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.due.localeCompare(b.due));
+}
+function renderMonthlyTasks(){
+ const tasks=monthlyTasks();
+ return '<div class="air-section-title"><h2>Мои активности овој месец</h2><span>'+tasks.length+' активности</span></div><div class="task-sheet"><div class="task-head"><span>Рок</span><span>Што треба да направиш</span><span>Клиент / пакет</span><span>Статус</span><span></span></div>'+
+ tasks.map(t=>'<div class="task-row"><span>'+t.due+'</span><strong>'+esc(t.action)+'</strong><span>'+esc(t.o.customer.name)+' · '+t.o.packageId+'</span><span class="task-priority '+t.kind+'">'+(t.overdue?'За реакција':t.kind==="waiting"?'Се чека':'Планирано')+'</span><button class="air-link" data-task-id="'+esc(t.o.id)+'" onclick="rotationDetail(this.dataset.taskId)">Отвори</button></div>').join('')+
+ (tasks.length?'':'<div class="empty">Нема активности овој месец.</div>')+'</div>';
+}
+function deliveryConfirmationLink(id){
+ const o=operationalPlan().find(x=>x.id===id);
+ if(!o||o.status!=="shipped"){alert("Прво потврди испраќање.");return}
+ const url=new URL("confirm.html",location.href);url.searchParams.set("cycle",id);
+ modal('<h2>Линк за клиентска потврда</h2><p>Демо линк за прием на пакетот '+o.packageId+'.</p><label>Линк</label><input class="input" id="receiptUrl" readonly><div id="receiptQr" class="receipt-qr"></div><p class="small">QR скенирање од друг уред НЕ ја ажурира администрацијата без централен backend. Ова е само прототип.</p><footer><button class="btn light" id="copyReceipt">Копирај линк</button><button class="btn light" onclick="closeModal()">Затвори</button></footer>');
+ document.getElementById("receiptUrl").value=url.href;
+ document.getElementById("copyReceipt").onclick=()=>navigator.clipboard.writeText(url.href);
+ const sc=document.createElement("script");sc.src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js";sc.onload=()=>{const el=document.getElementById("receiptQr");if(el&&window.QRCode)new QRCode(el,{text:url.href,width:156,height:156})};document.head.appendChild(sc);
+}
+function receiptPage(){
+ const id=new URLSearchParams(location.search).get("cycle"),o=operationalPlan().find(x=>x.id===id),root=document.getElementById("root");
+ if(!o||o.status!=="shipped"){root.innerHTML='<main class="public-page"><div class="public-card"><h1>Потврдата не е достапна</h1><p>Нема испратен пакет за овој линк во локалното демо.</p></div></main>';return}
+ root.innerHTML='<main class="public-page"><div class="public-card"><h1>Потврда за прием</h1><p>Пакет '+esc(o.packageId)+' за '+esc(o.customer.child)+'</p><p class="note">Демо потврда. Работи само во истиот browser.</p><button id="confirmReceipt" class="btn">Го добив пакетот</button></div></main>';
+ document.getElementById("confirmReceipt").onclick=()=>{
+ const op=db.operations.find(x=>x.id===id);if(!op||op.step!=="shipped"){alert("Пакетот нема статус испратено.");return}
+ op.step="delivered";op.deliveredAt=iso(new Date());op.confirmationSource="client-demo";save();
+ root.querySelector(".public-card").innerHTML='<h1>Приемот е потврден</h1><p>Благодариме!</p>';
+ };
 }
 function timeline(){
  const view=localStorage.getItem("toysharing_timeline_range")==="1"?1:2;
@@ -199,7 +239,7 @@ function timeline(){
  document.getElementById("topAction").innerHTML='<div class="air-range"><button class="'+(view===1?"active":"")+'" onclick="timelineRange(1)">Овој месец</button><button class="'+(view===2?"active":"")+'" onclick="timelineRange(2)">Следни 2 месеци</button></div>';
  document.getElementById("content").innerHTML='<div class="air-workspace">'+
  '<div class="air-metrics"><div><span>Замени</span><strong>'+visible.length+'</strong></div><div><span>Без ризик</span><strong>'+visible.filter(o=>classify(o).key==="ready").length+'</strong></div><div><span>Бараат внимание</span><strong class="air-attention">'+flagged.length+'</strong></div><div class="air-rule"><i data-lucide="clock-3"></i> '+turnaround()+' дена подготовка по враќање</div></div>'+
- '<div class="air-section-title"><h2>Timeline по клиенти</h2><span>Кликни на пакет за управување со испораката</span></div>'+grid+
+ renderMonthlyTasks()+'<div class="air-section-title"><h2>Timeline по клиенти</h2><span>Кликни на пакет за управување со испораката</span></div>'+grid+
  '<div class="air-section-title"><h2>Испораки и ротации</h2><span>'+visible.length+' циклуси · '+flagged.length+' за проверка</span></div>'+table+
  '<div class="air-footnote">Ова е план со локално зачувани операции. Зелениот статус е планска достапност, не потврдена InPost испорака. Ризиците се проверуваат за секој конкретен циклус.</div></div>';
 }
@@ -212,7 +252,7 @@ function rotationDetail(id){
  const fields=[["Дете",o.customer.child],["Пакет",o.packageId],["Физички сет",o.code],["Испрати до",o.dispatch],["Почеток",o.start],["Очекувано враќање",o.end],["Вратено на",o.returnedAt||"Не е потврдено"],["Подготвен најрано",o.readyAfter||"Нема"],["Адреса",o.address],["Состојба",o.description]];
  modal('<h2>'+o.packageId+' · '+esc(o.customer.name)+'</h2><p>Оперативен статус: <b>'+steps[o.status]+'</b></p><div class="ops-detail">'+fields.map(f=>'<div><span>'+f[0]+'</span><strong>'+esc(f[1])+'</strong></div>').join("")+'</div>'+
  '<div class="section"><label for="physicalKitChoice">Физички сет · доделување</label><select id="physicalKitChoice" '+(o.status!=="planned"?"disabled":"")+'><option value="">Автоматски избор</option>'+db.stock.filter(s=>s.packageId===o.packageId&&s.status!=="retired").map(s=>'<option value="'+esc(s.id)+'" '+((o.opStockId||o.stockId)===s.id?"selected":"")+'>'+esc(s.code)+'</option>').join("")+'</select><div class="mt"><button class="btn light sm" '+(o.status!=="planned"?"disabled":"")+' onclick="assignKit(\''+o.id+'\')">Зачувај доделување</button></div></div>'+'<div class="section"><label for="trackingInput">Број за следење на пратката</label><input id="trackingInput" class="input" value="'+esc(o.tracking)+'" placeholder="Внеси број од InPost"><div class="mt"><button class="btn light sm" onclick="updateTracking(\''+o.id+'\')">Зачувај број</button></div></div>'+
- '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+
+ '<footer><button class="btn light" onclick="closeModal()">Затвори</button>'+ (o.status==="shipped"?'<button class="btn light" data-confirm-id="'+esc(o.id)+'" onclick="deliveryConfirmationLink(this.dataset.confirmId)">QR потврда</button>':'')+
  (o.state!=="missing"?actions[o.status].map(a=>'<button class="btn" onclick="operationUpdate(\''+o.id+'\',\''+a[0]+'\')">'+a[1]+'</button>').join(""):'<a class="btn" href="inventory.html">Внеси нов сет</a>')+'</footer>');
 }
 
@@ -275,7 +315,7 @@ function signup(){
 
 function resetAll(){if(!confirm("Сите локални податоци ќе се избришат. Продолжи?"))return;db=seed();save();render()}
 if(localStorage.getItem(KEY)===null){db=buildDemo();save();}
-document.addEventListener("DOMContentLoaded",()=>{if(page()==="signup")signup();else layout()});
+document.addEventListener("DOMContentLoaded",()=>{if(page()==="signup")signup();else if(page()==="confirm")receiptPage();else layout()});
 
 function initializeLucide(){
   const run=()=>{if(window.lucide && document.querySelector("i[data-lucide]"))window.lucide.createIcons({attrs:{"stroke-width":1.75}})};
