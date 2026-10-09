@@ -235,3 +235,13 @@ textarea{min-height:84px;resize:vertical}
 .ops-tabs button.selected{color:#273D2D;border-bottom-color:#64866B}
 .ops-tabs button.selected svg{color:#E86B5B}
 @media(max-width:780px){.ops-tabs{padding:0 12px;overflow-x:auto}.ops-tabs button{white-space:nowrap;padding:0 12px}.sidebar{padding:10px}}
+
+/* Operations tabs — positioned under KPI strip, clean editorial treatment */
+.ops-tabs{min-height:56px;padding:0 30px;gap:24px;background:#fff;border-bottom:1px solid #E7EAE3;display:flex;align-items:stretch}
+.ops-tabs button{min-height:56px;padding:0 4px;gap:9px;border:0;border-bottom:2px solid transparent;background:transparent!important;border-radius:0;color:#778579;font:800 13px 'Nunito',sans-serif;letter-spacing:0;transition:color .15s,border-color .15s}
+.ops-tabs button svg{width:16px;height:16px;color:#9BA69C;stroke-width:1.75}
+.ops-tabs button:hover{color:#4F7056;background:transparent!important}
+.ops-tabs button:hover svg{color:#64866B}
+.ops-tabs button.selected{color:#273D2D;border-bottom-color:#E86B5B;font-weight:900}
+.ops-tabs button.selected svg{color:#E86B5B}
+@media(max-width:780px){.ops-tabs{gap:15px;padding:0 16px;overflow-x:auto}.ops-tabs button{white-space:nowrap}}
