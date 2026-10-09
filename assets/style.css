@@ -606,3 +606,18 @@ html[data-theme="dark"] .air-workspace .air-grid-header{border-bottom-color:#304
 .inventory-detail .inventory-kits th:last-child,.inventory-detail .inventory-kits td:last-child{padding-right:30px!important}
 .inventory-detail-row>td{padding:0!important}
 @media(max-width:780px){.inventory-detail-head{padding:14px 16px!important}.inventory-detail .inventory-kits{min-width:760px!important}.inventory-detail .inventory-kits th:first-child,.inventory-detail .inventory-kits td:first-child{padding-left:16px!important}}
+
+/* Shared table spacing: unlabeled actions aligned with left workspace gutter */
+:root{--table-edge-gutter:30px}
+.work-table th:first-child,.work-table td:first-child,
+.air-data th:first-child,.air-data td:first-child,
+.inventory-kits th:first-child,.inventory-kits td:first-child{padding-left:var(--table-edge-gutter)!important}
+.work-table th:last-child,.work-table td:last-child,
+.air-data th:last-child,.air-data td:last-child,
+.inventory-kits th:last-child,.inventory-kits td:last-child{
+ padding-right:var(--table-edge-gutter)!important;
+ text-align:right!important;
+}
+.work-table td:last-child .air-link,.air-data td:last-child .air-link,
+.inventory-kits td:last-child .air-link{vertical-align:middle}
+@media(max-width:780px){:root{--table-edge-gutter:16px}}
