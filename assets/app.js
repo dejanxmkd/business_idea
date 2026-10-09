@@ -235,8 +235,8 @@ function operationUpdate(id,step){
  if(step==="shipped"&&(!o.customer.address||o.customer.address.trim()==="")){alert("Внеси адреса на клиентот пред испраќање.");return}
  const allowed={planned:["shipped"],shipped:["delivered","returned"],delivered:["returned"],returned:["cleaned"],cleaned:[]};
  if(!(allowed[op.step]||[]).includes(step)){alert("Чекорот не може да се потврди во оваа фаза.");return}
- if(step==="shipped")op.shippedAt=iso(new Date());
- if(step==="delivered")op.deliveredAt=iso(new Date());
+ if(step==="shipped"){op.shippedAt=iso(new Date());op.demoDeliveryDue=Date.now()+30000;op.demoDelivery=true;}
+ if(step==="delivered"){op.deliveredAt=iso(new Date());op.demoDeliveryDue=0;}
  if(step==="returned")op.returnedAt=iso(new Date());
  if(step==="cleaned"){
    if(!op.returnedAt){alert("Прво потврди враќање.");return}
@@ -245,6 +245,7 @@ function operationUpdate(id,step){
  op.step=step;
  if(!existing)db.operations.push(op);
  save();closeModal();render();rotationDetail(id);
+ if(step==="shipped")scheduleDemoDelivery();
 }
 function updateTracking(id){
  const el=document.getElementById("trackingInput");if(!el)return;
@@ -252,24 +253,44 @@ function updateTracking(id){
  if(!op){const row=operationalPlan().find(x=>x.id===id);op={id,stockId:row?.stockId||"",step:"planned"};db.operations.push(op)}
  op.tracking=el.value.trim().slice(0,100);save();closeModal();rotationDetail(id);
 }
+function activityMonth(){const v=sessionStorage.getItem("toysharing_activity_month");return /^\d{4}-\d{2}-01$/.test(v||"")?v:iso(new Date(new Date().getFullYear(),new Date().getMonth(),1))}
+function activityMonthMove(delta){sessionStorage.setItem("toysharing_activity_month",addMonths(activityMonth(),delta));timeline()}
 function monthlyTasks(){
- const start=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1)),end=addMonths(start,1),today=iso(new Date());
- return operationalPlan().filter(o=>o.dispatch<end&&o.end>=start&&o.status!=="cleaned").map(o=>{
- let action="",due=o.dispatch,kind="normal";
- if(o.state==="missing"||o.conflict){action="Обезбеди комплет";kind="danger"}
- else if(!o.customer.address){action="Внеси адреса";kind="danger"}
- else if(o.status==="planned"){action=o.state==="risk"?"Провери / подготви комплет":"Подготви и испрати";kind=o.state==="risk"?"warning":"normal"}
- else if(o.status==="shipped"){action="Чекај потврда за прием";kind="waiting";due=o.start}
- else if(o.status==="delivered"){action="Закажи враќање";due=o.end}
- else if(o.status==="returned"){action="Исчисти и провери";due=o.returnedAt||o.end;kind="warning"}
- return {o,action,due,kind,overdue:due<=today&&kind!=="waiting"}
- }).filter(x=>x.action).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.due.localeCompare(b.due));
+ const start=activityMonth(),end=addMonths(start,1),today=iso(new Date());
+ return operationalPlan().map(o=>{
+   let action="",due="",kind="normal";
+   if(o.status==="planned"){
+     due=o.dispatch;
+     if(o.state==="missing"||o.conflict){action="Обезбеди физички сет";kind="danger"}
+     else if(!o.customer.address){action="Внеси адреса";kind="danger"}
+     else{action=o.state==="risk"?"Провери и подготви сет":"Подготви и испрати";kind=o.state==="risk"?"warning":"normal"}
+   }else if(o.status==="delivered"){action="Организирај враќање";due=o.end}
+   else if(o.status==="returned"){action="Исчисти и провери сет";due=o.returnedAt||o.end;kind="warning"}
+   return {o,action,due,kind,overdue:due<=today}
+ }).filter(x=>x.action&&x.due>=start&&x.due<end).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.due.localeCompare(b.due));
 }
 function renderMonthlyTasks(){
- const tasks=monthlyTasks();
- return '<div class="air-section-title"><h2>Мои активности овој месец</h2><span>'+tasks.length+' активности</span></div><div class="task-sheet"><div class="task-head"><span>Рок</span><span>Што треба да направиш</span><span>Клиент / пакет</span><span>Статус</span><span></span></div>'+
- tasks.map(t=>'<div class="task-row"><span>'+t.due+'</span><strong>'+esc(t.action)+'</strong><span>'+esc(t.o.customer.name)+' · '+t.o.packageId+'</span><span class="task-priority '+t.kind+'">'+(t.overdue?'За реакција':t.kind==="waiting"?'Се чека':'Планирано')+'</span><button class="air-link" data-task-id="'+esc(t.o.id)+'" onclick="rotationDetail(this.dataset.taskId)">Отвори</button></div>').join('')+
- (tasks.length?'':'<div class="empty">Нема активности овој месец.</div>')+'</div>';
+ const tasks=monthlyTasks(),month=activityMonth();
+ const name=new Date(month+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"});
+ return '<div class="air-section-title"><h2>Мои активности · '+esc(name)+'</h2><div class="activity-month-nav"><button onclick="activityMonthMove(-1)" aria-label="Претходен месец">‹</button><span>'+tasks.length+' мои задачи</span><button onclick="activityMonthMove(1)" aria-label="Следен месец">›</button></div></div><div class="task-sheet"><div class="task-head"><span>Рок</span><span>Моја задача</span><span>Клиент / пакет</span><span>Приоритет</span><span></span></div>'+
+ tasks.map(t=>'<div class="task-row"><span>'+t.due+'</span><strong>'+esc(t.action)+'</strong><span>'+esc(t.o.customer.name)+' · '+t.o.packageId+'</span><span class="task-priority '+t.kind+'">'+(t.overdue?'За реакција':'Планирано')+'</span><button class="air-link" data-task-id="'+esc(t.o.id)+'" onclick="rotationDetail(this.dataset.taskId)">Отвори</button></div>').join('')+
+ (tasks.length?'':'<div class="empty">Немаш задачи за овој месец.</div>')+'</div><p class="air-footnote">Потврдувањето на прием се симулира автоматски 30 секунди по испраќање. Не е твоја задача.</p>';
+}
+function scheduleDemoDelivery(){
+ if(window.toyDemoTimer)clearTimeout(window.toyDemoTimer);
+ const pending=db.operations.filter(x=>x.step==="shipped"&&x.demoDeliveryDue);
+ if(!pending.length)return;
+ const wait=Math.max(0,Math.min(...pending.map(x=>x.demoDeliveryDue))-Date.now());
+ window.toyDemoTimer=setTimeout(()=>{
+   const now=Date.now();let changed=false;
+   for(const op of db.operations){
+     if(op.step==="shipped"&&op.demoDeliveryDue&&op.demoDeliveryDue<=now){
+       op.step="delivered";op.deliveredAt=iso(new Date());op.confirmationSource="simulated-demo";op.demoDeliveryDue=0;changed=true;
+     }
+   }
+   if(changed){save();if(["dashboard","timeline","inventory"].includes(page()))render();}
+   scheduleDemoDelivery();
+ },wait);
 }
 function deliveryConfirmationLink(id){
  const o=operationalPlan().find(x=>x.id===id);
@@ -311,7 +332,7 @@ function timeline(){
  const flagged=visible.filter(o=>classify(o).key!=="ready");
  const status=o=>{const c=classify(o);return '<span class="air-status '+c.key+'" title="'+esc(c.why)+'"><i data-lucide="'+(c.key==="ready"?"check-circle-2":c.key==="risk"?"alert-triangle":"x-circle")+'"></i>'+c.text+'</span>'};
  const months=Array.from({length:view},(_,i)=>addMonths(start,i));
- const grid='<div class="air-grid-scroll"><div class="air-grid"><div class="air-grid-header"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"})+'</div>').join("")+'</div>'+
+ const grid='<div class="air-grid-scroll"><div class="air-grid" style="--timeline-months:'+view+'"><div class="air-grid-header"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"})+'</div>').join("")+'</div>'+
  db.customers.filter(c=>c.status==="active").map(c=>'<div class="air-grid-row"><div class="air-grid-client"><b>'+esc(c.name)+'</b><span>'+esc(c.child)+'</span></div>'+months.map(m=>{const o=visible.find(x=>x.customer.id===c.id&&x.start>=m&&x.start<addMonths(m,1));if(!o)return '<div class="air-grid-slot"><span class="air-faint">—</span></div>';const cl=classify(o);return '<div class="air-grid-slot"><button class="air-cycle '+cl.key+'" onclick="rotationDetail(\''+o.id+'\')"><span><b>'+o.packageId+'</b><small>'+o.start.slice(8,10)+'. '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</small></span>'+status(o)+'</button></div>'}).join("")+'</div>').join("")+'</div></div>';
  const table='<div class="air-table-scroll"><table class="air-data"><thead><tr><th>Датум за испраќање</th><th>Клиент / дете</th><th>Пакет</th><th>Физички сет</th><th>Адреса</th><th>Статус</th><th></th></tr></thead><tbody>'+visible.slice().sort((x,y)=>x.dispatch.localeCompare(y.dispatch)).map(o=>'<tr><td>'+esc(o.dispatch)+'</td><td><strong>'+esc(o.customer.name)+'</strong><small>'+esc(o.customer.child)+'</small></td><td><b>'+o.packageId+'</b></td><td>'+esc(o.code)+'</td><td class="air-address">'+esc(o.address)+'</td><td>'+status(o)+'</td><td><button class="air-link" onclick="rotationDetail(\''+o.id+'\')">Управувај <i data-lucide="chevron-right"></i></button></td></tr>').join("")+'</tbody></table></div>';
  header("Операции","Активности, календар на ротации и испораки.");
@@ -435,7 +456,7 @@ function signup(){
 
 function resetAll(){if(!confirm("Сите локални податоци ќе се избришат. Продолжи?"))return;db=seed();save();render()}
 if(localStorage.getItem(KEY)===null){db=buildDemo();save();}
-document.addEventListener("DOMContentLoaded",()=>{if(page()==="signup")signup();else if(page()==="confirm")receiptPage();else layout()});
+document.addEventListener("DOMContentLoaded",()=>{scheduleDemoDelivery();if(page()==="signup")signup();else if(page()==="confirm")receiptPage();else layout()});
 
 function initializeLucide(){
   const run=()=>{if(window.lucide && document.querySelector("i[data-lucide]"))window.lucide.createIcons({attrs:{"stroke-width":1.75}})};
