@@ -446,3 +446,33 @@ html[data-theme="dark"] .customer-tabs button.selected{background:transparent!im
 
 /* Match nav active/hover corners to theme switch */
 .sidebar .nav a,.sidebar .nav a:hover,.sidebar .nav a.active,.sidebar .nav a.active:hover{border-radius:8px!important}
+
+/* Stable framed table surfaces across all three Operations tabs */
+.air-workspace .task-sheet,
+.air-workspace .air-grid-scroll,
+.air-workspace .air-table-scroll{
+ border-top:1px solid var(--line)!important;
+ border-bottom:1px solid var(--line)!important;
+ border-left:0!important;
+ border-right:0!important;
+ border-radius:0!important;
+ box-sizing:border-box;
+}
+.air-workspace .task-head,
+.air-workspace .air-grid-header,
+.air-workspace .air-data thead tr{
+ border-bottom:1px solid var(--line)!important;
+}
+.air-workspace .task-row:last-child,
+.air-workspace .air-grid-row:last-child,
+.air-workspace .air-data tbody tr:last-child{
+ border-bottom:0!important;
+}
+html[data-theme="dark"] .air-workspace .task-sheet,
+html[data-theme="dark"] .air-workspace .air-grid-scroll,
+html[data-theme="dark"] .air-workspace .air-table-scroll,
+html[data-theme="dark"] .air-workspace .task-head,
+html[data-theme="dark"] .air-workspace .air-grid-header,
+html[data-theme="dark"] .air-workspace .air-data thead tr{
+ border-color:#304037!important;
+}
