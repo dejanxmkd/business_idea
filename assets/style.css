@@ -421,3 +421,25 @@ html[data-theme="dark"] .drawer>footer{background:var(--dark-canvas,#141D19);bor
 .sidebar-foot .theme-toggle{margin:0!important;width:100%}
 .sidebar{padding-bottom:22px!important}
 @media(max-width:780px){.sidebar{padding-bottom:10px!important}}
+
+/* Subtle navigation and tab interactions — soft in both themes */
+.sidebar .nav a,
+.ops-tabs button,
+.catalog-tabs a,
+.customer-tabs button{
+ transition:background-color .22s ease,color .22s ease,border-color .22s ease!important;
+}
+.sidebar .nav a:hover:not(.active){background:#F7F8F5!important}
+.sidebar .nav a.active{background:#EDF2EC!important}
+.ops-tabs button:hover:not(.selected),
+.catalog-tabs a:hover:not(.selected),
+.customer-tabs button:hover:not(.selected){background:rgba(100,134,107,.035)!important}
+html[data-theme="dark"] .sidebar .nav a:hover:not(.active){background:#1A261E!important}
+html[data-theme="dark"] .sidebar .nav a.active{background:#223429!important}
+html[data-theme="dark"] .ops-tabs button:hover:not(.selected),
+html[data-theme="dark"] .catalog-tabs a:hover:not(.selected),
+html[data-theme="dark"] .customer-tabs button:hover:not(.selected){background:rgba(135,168,138,.045)!important}
+html[data-theme="dark"] .ops-tabs button.selected,
+html[data-theme="dark"] .catalog-tabs a.selected,
+html[data-theme="dark"] .customer-tabs button.selected{background:transparent!important}
+@media(prefers-reduced-motion:reduce){.sidebar .nav a,.ops-tabs button,.catalog-tabs a,.customer-tabs button{transition:none!important}}
