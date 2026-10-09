@@ -330,3 +330,13 @@ html[data-theme="dark"] .ops-tabs{border-bottom-color:#34443A!important}
 html[data-theme="dark"] .ops-tabs button{border-bottom-color:transparent}
 html[data-theme="dark"] .ops-tabs button.selected{border-bottom-color:#E86B5B}
 html[data-theme="dark"] .task-sheet,html[data-theme="dark"] .task-head,html[data-theme="dark"] .air-section-title{border-color:#34443A!important}
+
+/* Client status tabs, aligned with operations/inventory */
+.customer-tabs{display:flex;align-items:stretch;gap:22px;padding:0 30px;min-height:56px;border-bottom:1px solid var(--line);background:var(--paper);overflow-x:auto}
+.customer-tabs button{display:inline-flex;align-items:center;gap:9px;min-height:56px;padding:0 4px;border:0;border-bottom:2px solid transparent;background:transparent;color:var(--muted);font:800 14px 'Nunito',sans-serif;white-space:nowrap}
+.customer-tabs button:hover{color:var(--sage-strong)}
+.customer-tabs button.selected{color:var(--ink);border-bottom-color:var(--coral)}
+.customer-tab-count{font:800 11px 'Nunito',sans-serif;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:99px;padding:2px 7px}
+html[data-theme="dark"] .customer-tabs{background:#1B2720;border-color:#34443A}
+html[data-theme="dark"] .customer-tab-count{background:#233029;color:#B7C5B9;border-color:#34443A}
+@media(max-width:780px){.customer-tabs{padding:0 16px;gap:16px}}
