@@ -183,3 +183,11 @@ textarea{min-height:84px;resize:vertical}
 .toy-more:hover,.toy-more:focus-visible{background:#E8EFE6}
 .toy-more:hover::after,.toy-more:focus-visible::after{content:attr(data-tooltip);position:absolute;z-index:15;right:0;bottom:calc(100% + 9px);width:max-content;max-width:min(360px,75vw);white-space:normal;text-align:left;padding:10px 12px;background:#273D2D;color:#fff;border-radius:8px;box-shadow:0 8px 22px #273D2D25;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
 .work-table td.work-toys{white-space:nowrap}
+
+/* Sidebar navigation: green text, coral icons, no highlighted blocks */
+.sidebar .nav a,.sidebar .nav a:hover,.sidebar .nav a.active,.sidebar .nav a.active:hover,.sidebar .nav a:focus-visible{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important}
+.sidebar .nav a{color:#64866B!important;transition:color .16s ease!important}
+.sidebar .nav a:hover{color:#4F7056!important}
+.sidebar .nav a.active,.sidebar .nav a.active:hover{color:#273D2D!important}
+.sidebar .nav a svg,.sidebar .nav a:hover svg,.sidebar .nav a.active svg{color:#E86B5B!important;stroke:#E86B5B!important}
+.sidebar .nav a:focus-visible{outline:2px solid #64866B;outline-offset:-2px}
