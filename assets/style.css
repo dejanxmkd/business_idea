@@ -218,3 +218,20 @@ textarea{min-height:84px;resize:vertical}
 .task-priority{color:#4F7056;font-size:12px;font-weight:800}.task-priority.danger{color:#C94747}.task-priority.warning{color:#A67427}.task-priority.waiting{color:#527F9D}
 .receipt-qr{display:flex;justify-content:center;margin:16px 0}
 @media(max-width:850px){.task-sheet{overflow-x:auto}.task-row,.task-head{min-width:820px}}
+
+/* Simplified sidebar: plain label + small icon; unobtrusive active marker */
+.sidebar{background:#fff;border-right:1px solid #E7EAE3;padding:22px 16px}
+.brand{padding:0 0 27px}
+.sidebar .nav{gap:6px;padding:0}
+.sidebar .nav a{min-height:43px;padding:9px 12px!important;background:transparent!important;border:0!important;border-radius:8px!important;font-weight:700!important;color:#617566!important}
+.sidebar .nav a svg{width:17px;height:17px;color:#E86B5B!important;stroke:#E86B5B!important}
+.sidebar .nav a:hover{color:#273D2D!important;background:#F7F8F5!important}
+.sidebar .nav a.active{color:#273D2D!important;background:#F5F7F2!important;font-weight:900!important}
+.sidebar .nav a.active::before{display:none!important}
+.ops-tabs{display:flex;align-items:center;gap:2px;padding:0 30px;background:#fff;border-bottom:1px solid #E7EAE3;min-height:60px}
+.ops-tabs button{display:flex;align-items:center;gap:9px;min-height:60px;padding:0 19px;background:transparent;border:0;border-bottom:3px solid transparent;color:#778579;font:800 14px 'Nunito',sans-serif}
+.ops-tabs button svg{width:17px;height:17px}
+.ops-tabs button:hover{color:#4F7056;background:#FAF8F3}
+.ops-tabs button.selected{color:#273D2D;border-bottom-color:#64866B}
+.ops-tabs button.selected svg{color:#E86B5B}
+@media(max-width:780px){.ops-tabs{padding:0 12px;overflow-x:auto}.ops-tabs button{white-space:nowrap;padding:0 12px}.sidebar{padding:10px}}
