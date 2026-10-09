@@ -591,3 +591,9 @@ html[data-theme="dark"] .toy-more:hover,html[data-theme="dark"] .toy-more:focus-
 .finance-actions{display:inline-flex;align-items:center;justify-content:flex-end;gap:9px;white-space:nowrap}
 .finance-actions .air-link{margin:0!important;min-height:34px}
 @media(max-width:780px){.finance-table th:last-child,.finance-table td:last-child{padding-right:16px!important}}
+
+/* Timeline table header: only one bottom divider, no duplicate top rule */
+.air-workspace .air-grid-scroll{border-top:0!important}
+.air-workspace .air-grid-header{border-top:0!important;border-bottom:1px solid var(--line)!important}
+.air-workspace .air-grid-header>div{border-top:0!important;border-bottom:0!important}
+html[data-theme="dark"] .air-workspace .air-grid-header{border-bottom-color:#304037!important}
