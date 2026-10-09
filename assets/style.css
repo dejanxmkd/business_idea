@@ -415,3 +415,9 @@ html[data-theme="dark"] .btn:not(.light):not(.danger):hover{background:#D85D4F!i
 html[data-theme="dark"] .drawer>footer{background:var(--dark-canvas,#141D19);border-top-color:var(--line);box-shadow:0 -8px 16px -14px #0008}
 .drawer>footer .btn{min-height:40px}
 @media(max-width:780px){.drawer>footer{padding-bottom:calc(16px + env(safe-area-inset-bottom))!important}}
+
+/* Symmetric sidebar bottom spacing around appearance switch */
+.sidebar-foot{padding:18px 0 0!important;margin-top:auto}
+.sidebar-foot .theme-toggle{margin:0!important;width:100%}
+.sidebar{padding-bottom:22px!important}
+@media(max-width:780px){.sidebar{padding-bottom:10px!important}}
