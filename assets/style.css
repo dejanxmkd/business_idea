@@ -674,3 +674,20 @@ html[data-theme="dark"] .task-row{border-bottom-color:#2B3930!important}
 .task-row .badge-status.waiting,html[data-theme="dark"] .task-row .badge-status.waiting{background:#527F9D!important;color:#fff!important}
 .task-row .badge-status.planned{background:#64866B!important;color:#fff!important}
 html[data-theme="dark"] .task-row .badge-status.planned{background:#43835A!important;color:#fff!important}
+
+/* Inventory accordion: remove inherited table-cell insets, full-width nested detail */
+.inventory-summary > tbody > tr.inventory-detail-row > td,
+.work-table.inventory-summary > tbody > tr.inventory-detail-row > td,
+.inventory-detail-row > td:first-child,
+.inventory-detail-row > td:last-child{
+ padding:0!important;
+ margin:0!important;
+}
+.inventory-detail-row{background:transparent!important}
+.inventory-detail-row .inventory-detail{width:100%!important;max-width:none!important;box-sizing:border-box;margin:0!important;padding:0!important}
+.inventory-detail-row .inventory-detail-head{box-sizing:border-box;width:100%;padding-left:var(--table-edge-gutter,30px)!important;padding-right:var(--table-edge-gutter,30px)!important}
+.inventory-detail-row .inventory-kits{width:100%!important;margin:0!important;border-spacing:0!important;box-sizing:border-box}
+.inventory-detail-row .inventory-kits th:first-child,
+.inventory-detail-row .inventory-kits td:first-child{padding-left:var(--table-edge-gutter,30px)!important}
+.inventory-detail-row .inventory-kits th:last-child,
+.inventory-detail-row .inventory-kits td:last-child{padding-right:var(--table-edge-gutter,30px)!important}
