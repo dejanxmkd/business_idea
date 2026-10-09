@@ -108,7 +108,7 @@ function saveInventoryQuantity(id){
  const current=db.stock.filter(x=>x.packageId===id&&x.status!=="retired");
  const change=q-current.length;
  if(change>0){
-   for(let i=0;i<change;i++){const key=uid();db.stock.push({id:key,code:"SET-"+id+"-"+key.toUpperCase(),packageId:id,price:Number(db.packages.find(p=>p.id===id)?.cost||0),condition:"Добра",status:"ready"})}
+   for(let i=0;i<change;i++){const key=uid();db.stock.push({id:key,code:"SET-"+id+"-"+key.toUpperCase(),packageId:id,price:0,condition:"Добра",status:"ready"})}
  }else if(change<0){
    const reserved=new Set(db.operations.filter(o=>o.stockId).map(o=>o.stockId));
    const removable=current.filter(x=>!reserved.has(x.id)).reverse();
