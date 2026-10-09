@@ -691,3 +691,8 @@ html[data-theme="dark"] .task-row .badge-status.planned{background:#43835A!impor
 .inventory-detail-row .inventory-kits td:first-child{padding-left:var(--table-edge-gutter,30px)!important}
 .inventory-detail-row .inventory-kits th:last-child,
 .inventory-detail-row .inventory-kits td:last-child{padding-right:var(--table-edge-gutter,30px)!important}
+
+/* Public site shortcut in admin sidebar */
+.sidebar-foot .sidebar-site-link{display:block;padding:11px 13px;border-radius:8px;color:var(--sage);font-size:13px;font-weight:900;text-decoration:none;transition:background .22s,color .22s}
+.sidebar-foot .sidebar-site-link:hover{background:var(--sage-soft);color:var(--ink)}
+html[data-theme="dark"] .sidebar-foot .sidebar-site-link:hover{background:#1B2921;color:#fff}
