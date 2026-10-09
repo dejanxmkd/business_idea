@@ -191,3 +191,16 @@ textarea{min-height:84px;resize:vertical}
 .sidebar .nav a.active,.sidebar .nav a.active:hover{color:#273D2D!important}
 .sidebar .nav a svg,.sidebar .nav a:hover svg,.sidebar .nav a.active svg{color:#E86B5B!important;stroke:#E86B5B!important}
 .sidebar .nav a:focus-visible{outline:2px solid #64866B;outline-offset:-2px}
+
+/* Shared alignment axis: page heading, section title and first table column */
+:root{--workspace-gutter:30px}
+.main .top{padding-left:var(--workspace-gutter);padding-right:var(--workspace-gutter)}
+.main .work-bar,.main .air-section-title{padding-left:var(--workspace-gutter);padding-right:var(--workspace-gutter)}
+.main .work-table th:first-child,.main .work-table td:first-child,
+.main .air-data th:first-child,.main .air-data td:first-child,
+.main .table-wrap table th:first-child,.main .table-wrap table td:first-child{padding-left:var(--workspace-gutter)}
+.main .work-table th:last-child,.main .work-table td:last-child,
+.main .air-data th:last-child,.main .air-data td:last-child{padding-right:var(--workspace-gutter)}
+.main .air-grid-header>div:first-child,.main .air-grid-client{padding-left:var(--workspace-gutter)}
+.main .work-settings,.main .work-actions{padding-left:var(--workspace-gutter);padding-right:var(--workspace-gutter)}
+@media(max-width:780px){:root{--workspace-gutter:16px}}
