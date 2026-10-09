@@ -273,14 +273,14 @@ function rotationDetail(id){
 }
 
 function finances(){
- header("Финансии","Наплати и трошоци во еден табеларен преглед.",'<div class="flex"><button class="btn light" onclick="transactionForm(\'expense\')">+ Трошок</button><button class="btn" onclick="transactionForm(\'payment\')">+ Наплата</button></div>');
+ header("Финансии","Наплати и трошоци во еден табеларен преглед.",'<button class="btn" onclick="transactionForm(\'expense\')">+ Трошок</button>');
  const total=db.payments.reduce((n,x)=>n+Number(x.amount),0),costs=db.expenses.reduce((n,x)=>n+Number(x.amount),0);
  const rows=[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date));
  document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(total)+'</strong></span><span>Трошоци <strong>'+money(costs)+'</strong></span><span>Салдо <strong>'+money(total-costs)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Датум</th><th>Вид</th><th>Опис</th><th>Износ</th><th></th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+x.date+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.description)+'</td><td>'+money(x.amount)+'</td><td><button class="air-link" onclick="deleteTransaction(\''+x.type+'\',\''+x.id+'\')">Избриши</button></td></tr>').join('')+'</tbody></table></div></div>';
 }
 
-function transactionForm(type){modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
-function saveTransaction(type){const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
+function transactionForm(type){if(type!=="expense")return;modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
+function saveTransaction(type){if(type!=="expense")return;const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
 function deleteTransaction(type,id){if(!confirmDelete("Да се избрише трансакцијата?"))return;const key=type==="payment"?"payments":"expenses";db[key]=db[key].filter(x=>x.id!==id);save();render()}
 function settings(){
  header("Поставки","Бизнис правила, подготовка и локални податоци.");
