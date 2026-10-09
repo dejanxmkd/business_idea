@@ -168,40 +168,45 @@ function operationalPlan(){
  const customers=db.customers.filter(c=>c.status==="active");
  const orders=customers.flatMap(c=>cycles(c).map(cy=>({...cy,customer:c,dispatch:plusDays(cy.start,-2)}))).sort((a,b)=>a.dispatch.localeCompare(b.dispatch)||a.id.localeCompare(b.id));
  const operationMap=new Map(db.operations.map(o=>[o.id,o]));
- const pool={};
- for(const p of db.packages)pool[p.id]=db.stock.filter(s=>s.packageId===p.id&&s.status!=="retired").map(s=>({id:s.id,code:s.code,status:s.status,free:"0001-01-01",months:new Set()}));
- const output=[];
+ const stockById=new Map(db.stock.filter(s=>s.status!=="retired").map(s=>[s.id,s]));
+ const reservations=new Map(db.stock.map(s=>[s.id,[]]));
+ const readyAt=(order,op)=>{
+   if(op.step==="shipped"||op.step==="delivered")return "9999-12-31"; // Physical kit is still with customer
+   if(op.step==="returned"&&!op.cleanedAt)return "9999-12-31"; // Must finish inspection/cleaning
+   if(op.step==="cleaned"&&op.returnedAt&&op.cleanedAt)return [plusDays(op.returnedAt,turnaround()),op.cleanedAt].sort().at(-1);
+   return plusDays(order.end,turnaround()); // Forecast for future, not a confirmed shipment
+ };
+ const overlaps=(a,b)=>a.start<b.until&&b.start<a.until||a.month===b.month;
+ // Preserve manually assigned and already dispatched sets first; auto allocation never steals them.
  for(const order of orders){
-  const op=operationMap.get(order.id)||{};
-  const candidates=pool[order.packageId]||[];
-  let kit=null;
-  if(op.stockId)kit=candidates.find(s=>s.id===op.stockId);
-  if(!kit&&!op.stockId){
-    kit=candidates.filter(s=>s.free<=order.dispatch&&!s.months.has(order.dispatch.slice(0,7))).sort((a,b)=>a.free.localeCompare(b.free))[0]||null;
-  }
-  let conflict=!!kit&&(kit.free>order.dispatch||kit.months.has(order.dispatch.slice(0,7)));
-  const blockedByReturn=!!kit&&kit.free==="9999-12-31";
-  let state=!kit||conflict?"missing":kit.status==="cleaning"?"risk":"ready";
-  if((op.step==="shipped"||op.step==="delivered")&&!conflict)state="transit";
-  if(op.step==="returned"&&!conflict)state="processing";
-  if(op.step==="cleaned"&&!conflict)state="done";
-  let description=!kit?"Нема физички сет. Потребна е набавка.":conflict?"Избраниот сет не е слободен за овој термин.":"Сетот е планиран; провери ја адресата и подготви ја испораката.";
-  if(kit&&!conflict){
-    kit.months.add(order.dispatch.slice(0,7));
-    // A dispatched kit stays blocked until a return is recorded. Future planning uses the
-    // expected return date plus a full turnaround window.
-    const returnDay=op.returnedAt||order.end;
-    let nextFree=plusDays(returnDay,turnaround());
-    if((op.step==="shipped"||op.step==="delivered")&&date(order.end)<new Date())nextFree="9999-12-31";
-    if(op.step==="returned"&&op.returnedAt)nextFree=plusDays(op.returnedAt,turnaround());
-    if(op.step==="cleaned"&&op.cleanedAt)nextFree=[plusDays(op.returnedAt||order.end,turnaround()),op.cleanedAt].sort().at(-1);
-    kit.free=nextFree;
-  }
-  const deliveryAddress=order.customer.address||"Нема внесена адреса";
-  const status=op.step||"planned";
-  output.push({...order,stockId:kit?.id||"",code:kit?.code||"—",state,status,description,conflict,blockedByReturn,address:deliveryAddress,returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?.free||"",buffer:turnaround()});
+   const op=operationMap.get(order.id)||{},kit=stockById.get(op.stockId);
+   if(kit&&kit.packageId===order.packageId){
+     reservations.get(kit.id).push({id:order.id,start:order.dispatch,until:readyAt(order,op),month:order.dispatch.slice(0,7),fixed:true});
+   }
  }
- return output;
+ const result=[];
+ for(const order of orders){
+   const op=operationMap.get(order.id)||{},kitPool=db.stock.filter(k=>k.packageId===order.packageId&&k.status!=="retired");
+   const selected=op.stockId?stockById.get(op.stockId):kitPool.find(k=>{
+     if(k.status==="cleaning")return false;
+     const desired={start:order.dispatch,until:readyAt(order,op),month:order.dispatch.slice(0,7)};
+     return !(reservations.get(k.id)||[]).some(x=>overlaps(x,desired));
+   });
+   const kit=selected&&selected.packageId===order.packageId?selected:null;
+   const desired={id:order.id,start:order.dispatch,until:readyAt(order,op),month:order.dispatch.slice(0,7)};
+   const conflict=!!kit&&(reservations.get(kit.id)||[]).some(x=>x.id!==order.id&&overlaps(x,desired));
+   if(kit&&!op.stockId&&!conflict)reservations.get(kit.id).push(desired);
+   const blockedByReturn=!!kit&&(reservations.get(kit.id)||[]).some(x=>x.id!==order.id&&x.until==="9999-12-31");
+   let state=!kit||conflict?"missing":kit.status==="cleaning"?"risk":"ready";
+   if(!conflict&&kit){
+     if(op.step==="shipped"||op.step==="delivered")state="transit";
+     if(op.step==="returned")state="processing";
+     if(op.step==="cleaned")state="done";
+   }
+   const description=!kit?"Нема слободен физички сет во Залиха.":conflict?"Сетот е веќе доделен или недостапен; потребна е друга физичка копија.":op.step==="shipped"||op.step==="delivered"?"Сетот е кај клиент и не е достапен за друга испорака.":"Планирана достапност; провери и подготви ја испораката.";
+   result.push({...order,stockId:kit?.id||"",code:kit?.code||"—",state,status:op.step||"planned",description,conflict,blockedByReturn,address:order.customer.address||"Нема внесена адреса",returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?desired.until:"",buffer:turnaround()});
+ }
+ return result;
 }
 function rotationOrders(){return operationalPlan();}
 function shipmentAlreadyUsed(id,kitId,month){
@@ -218,7 +223,7 @@ function assignKit(id){
  const kitId=el.value||row.stockId;
  const kit=db.stock.find(x=>x.id===kitId&&x.packageId===row.packageId&&x.status!=="retired");
  if(!kit){alert("Избери постоечки сет од Залиха.");return}
- if(shipmentAlreadyUsed(id,kitId,row.dispatch.slice(0,7))){alert("Овој сет веќе е испратен во истиот месец. Избери друг физички сет.");return}
+ if(db.operations.some(op=>op.id!==id&&op.stockId===kitId&&["shipped","delivered","returned"].includes(op.step))){alert("Овој сет не е достапен: доделен е на друг клиент и сè уште не е подготвен.");return}
  const existing=db.operations.find(x=>x.id===id),previous=existing?.stockId;
  if(existing)existing.stockId=kitId;else db.operations.push({id,stockId:kitId,step:"planned"});
  const updated=operationalPlan().find(x=>x.id===id);
@@ -231,6 +236,7 @@ function operationUpdate(id,step){
  const op=existing||{id,stockId:o.stockId,step:"planned"};
  if(!o.stockId){alert("Нема доделен физички сет. Прво набави и регистрирај копија во Залиха.");return}
  if(o.conflict){alert("Конфликт во залихата. Овој сет веќе е резервиран во истиот период.");return}
+ if(step==="shipped"&&db.stock.find(k=>k.id===o.stockId)?.status==="cleaning"){alert("Сетот е на чистење и не може да се испрати.");return}
  if(step==="shipped"&&shipmentAlreadyUsed(id,o.stockId,iso(new Date()).slice(0,7))){alert("Овој физички сет е веќе испратен во овој месец. Избери друг сет од Залиха.");return}
  if(step==="shipped"&&(!o.customer.address||o.customer.address.trim()==="")){alert("Внеси адреса на клиентот пред испраќање.");return}
  const allowed={planned:["shipped"],shipped:["delivered","returned"],delivered:["returned"],returned:["cleaned"],cleaned:[]};
