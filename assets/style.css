@@ -316,3 +316,11 @@ html[data-theme="dark"] .theme-toggle{color:#E8EEE8}
 html[data-theme="dark"] .task-priority{color:#ABD1B0}
 html[data-theme="dark"] .task-priority.warning{color:#F2C16C}
 html[data-theme="dark"] .task-priority.danger{color:#F08C83}
+
+/* One workspace for inventory and package definitions; inventory first */
+.catalog-tabs{display:flex;align-items:stretch;gap:22px;width:100%;min-height:56px;padding:0 30px;border-bottom:1px solid var(--line);background:var(--paper);white-space:nowrap}
+.catalog-tabs a{display:inline-flex;align-items:center;padding:0 4px;border-bottom:2px solid transparent;color:var(--muted);font:800 14px 'Nunito',sans-serif;transition:color .16s,border-color .16s}
+.catalog-tabs a:hover{color:var(--sage-strong)}
+.catalog-tabs a.selected{color:var(--ink);border-bottom-color:var(--coral)}
+html[data-theme="dark"] .catalog-tabs{background:#1B2720}
+@media(max-width:780px){.catalog-tabs{padding:0 16px;gap:17px;overflow-x:auto}}
