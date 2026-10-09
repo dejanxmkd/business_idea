@@ -443,3 +443,6 @@ html[data-theme="dark"] .ops-tabs button.selected,
 html[data-theme="dark"] .catalog-tabs a.selected,
 html[data-theme="dark"] .customer-tabs button.selected{background:transparent!important}
 @media(prefers-reduced-motion:reduce){.sidebar .nav a,.ops-tabs button,.catalog-tabs a,.customer-tabs button{transition:none!important}}
+
+/* Match nav active/hover corners to theme switch */
+.sidebar .nav a,.sidebar .nav a:hover,.sidebar .nav a.active,.sidebar .nav a.active:hover{border-radius:8px!important}
