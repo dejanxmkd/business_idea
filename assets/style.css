@@ -492,3 +492,7 @@ html[data-theme="dark"] .air-workspace .air-data thead tr{
 html[data-theme="dark"] .inventory-detail{background:#19271F}
 html[data-theme="dark"] .inventory-kits,html[data-theme="dark"] .inventory-kits th,html[data-theme="dark"] .inventory-kits td{background:transparent!important}
 @media(max-width:780px){.inventory-detail{padding:12px 16px}.inventory-kits{min-width:750px}}
+
+/* Destructive table action uses brand coral instead of standard green */
+.air-link.delete-action,html[data-theme="dark"] .air-link.delete-action{color:#E86B5B!important;border-color:#E86B5B55!important;background:transparent!important}
+.air-link.delete-action:hover,html[data-theme="dark"] .air-link.delete-action:hover{color:#D85D4F!important;background:#E86B5B16!important;border-color:#E86B5B88!important}
