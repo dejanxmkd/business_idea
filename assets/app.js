@@ -317,7 +317,7 @@ function finances(){
  const payments=db.payments.reduce((n,x)=>n+Number(x.amount),0),expenses=db.expenses.reduce((n,x)=>n+Number(x.amount),0);
  const rows=[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date));
  const ref=x=>[x.packageId||"",x.stockId?(db.stock.find(s=>s.id===x.stockId)?.code||x.stockId):""].filter(Boolean).join(" · ")||"—";
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(payments)+'</strong></span><span>Трошоци <strong>'+money(expenses)+'</strong></span><span>Салдо <strong>'+money(payments-expenses)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Датум</th><th>Вид</th><th>Причина</th><th>Пакет / сет</th><th>Опис</th><th>Износ</th><th>Акции</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.type==="expense"?(x.category||"Друго"):"Претплата")+'</td><td>'+esc(ref(x))+'</td><td>'+esc(x.description||"")+'</td><td>'+money(x.amount)+'</td><td>'+(x.type==="expense"?'<button class="air-link delete-action" onclick="deleteTransaction(\'expense\',\''+x.id+'\')">Избриши</button>':'<span class="small muted">Автоматски</span>')+'</td></tr>').join('')+'</tbody></table></div></div>';
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(payments)+'</strong></span><span>Трошоци <strong>'+money(expenses)+'</strong></span><span>Салдо <strong>'+money(payments-expenses)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Датум</th><th>Вид</th><th>Причина</th><th>Пакет / сет</th><th>Опис</th><th>Износ</th><th>Акции</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.type==="expense"?(x.category||"Друго"):"Претплата")+'</td><td>'+esc(ref(x))+'</td><td>'+esc(x.description||"")+'</td><td>'+money(x.amount)+'</td><td>'+(x.type==="expense"?'<button class="air-link" onclick="editExpense(\''+x.id+'\')">Уреди</button> <button class="air-link delete-action" onclick="deleteTransaction(\'expense\',\''+x.id+'\')">Избриши</button>':'')+'</td></tr>').join('')+'</tbody></table></div></div>';
 }
 function expenseStockOptions(packageId){
  const select=document.getElementById("expenseStock");if(!select)return;
@@ -334,13 +334,27 @@ function transactionForm(type){
  '<div class="wide">'+field("description","Опис / што е купено","")+'</div></form>'+
  '<footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\'expense\')">Зачувај трошок</button></footer>');
 }
-function saveTransaction(type){
+function editExpense(id){
+ const x=db.expenses.find(e=>e.id===id);if(!x)return;
+ transactionForm("expense");
+ document.querySelector("#transactionForm [name=date]").value=x.date||"";
+ document.querySelector("#transactionForm [name=amount]").value=x.amount||"";
+ document.querySelector("#transactionForm [name=category]").value=x.category||"Друго";
+ document.querySelector("#transactionForm [name=packageId]").value=x.packageId||"";
+ expenseStockOptions(x.packageId||"");
+ document.querySelector("#transactionForm [name=stockId]").value=x.stockId||"";
+ document.querySelector("#transactionForm [name=description]").value=x.description||"";
+ document.querySelector('#modal h2').textContent="Уреди трошок";
+ const btn=document.querySelector('#modal footer .btn:not(.light)');
+ btn.textContent="Зачувај промени";btn.setAttribute("onclick","saveTransaction('expense','"+id+"')");
+}
+function saveTransaction(type,id){
  if(type!=="expense")return;
  const f=document.getElementById("transactionForm");if(!f.reportValidity())return;
  const d=formData("transactionForm");d.amount=Number(d.amount);
  if(!Number.isFinite(d.amount)||d.amount<=0){alert("Внеси валиден износ.");return}
  if(d.stockId&&!db.stock.some(s=>s.id===d.stockId&&s.packageId===d.packageId)){alert("Избраниот сет не припаѓа на пакетот.");return}
- db.expenses.push({id:uid(),...d});
+ if(id){const item=db.expenses.find(e=>e.id===id);if(!item)return;Object.assign(item,d)}else db.expenses.push({id:uid(),...d});
  save();closeModal();render();
 }
 function deleteTransaction(type,id){
