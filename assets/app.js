@@ -74,17 +74,17 @@ function saveCustomer(id){const f=document.getElementById("customerForm");if(!f.
 function deleteCustomer(id){if(!confirmDelete("Да се избрише клиентот?"))return;db.customers=db.customers.filter(c=>c.id!==id);save();render()}
 function packages(){
  header("Пакети","Дефинирај ја содржината на секој Montessori пакет. Залихата се управува одделно.");
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Каталог на пакети</strong><span>5 играчки по пакет</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Содржина на пакетот</th><th>Набавна цена</th><th>Акции</th></tr></thead><tbody>'+db.packages.map(p=>'<tr><td><strong>'+p.id+'</strong></td><td>'+esc(p.title)+'</td><td class="work-toys">'+p.toys.slice(0,3).map(t=>'<span class="toy-chip" title="'+esc(t)+'">'+esc(t)+'</span>').join('')+(p.toys.length>3?'<button type="button" class="toy-more" title="'+esc(p.toys.slice(3).join(" • "))+'" aria-label="'+esc(p.toys.slice(3).join(", "))+'" data-tooltip="'+esc(p.toys.slice(3).join(" • "))+'">+'+(p.toys.length-3)+'</button>':"")+'</td><td>'+money(p.cost)+'</td><td><button class="air-link" onclick="packageForm(\''+p.id+'\')">Уреди <i data-lucide="chevron-right"></i></button></td></tr>').join('')+'</tbody></table></div></div>';
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Каталог на пакети</strong><span>5 играчки по пакет</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Содржина на пакетот</th><th>Акции</th></tr></thead><tbody>'+db.packages.map(p=>'<tr><td><strong>'+p.id+'</strong></td><td>'+esc(p.title)+'</td><td class="work-toys">'+p.toys.slice(0,3).map(t=>'<span class="toy-chip" title="'+esc(t)+'">'+esc(t)+'</span>').join('')+(p.toys.length>3?'<button type="button" class="toy-more" title="'+esc(p.toys.slice(3).join(" • "))+'" aria-label="'+esc(p.toys.slice(3).join(", "))+'" data-tooltip="'+esc(p.toys.slice(3).join(" • "))+'">+'+(p.toys.length-3)+'</button>':"")+'</td><td><button class="air-link" onclick="packageForm(\''+p.id+'\')">Уреди <i data-lucide="chevron-right"></i></button></td></tr>').join('')+'</tbody></table></div></div>';
 }
 function packageForm(id){
  const p=db.packages.find(x=>x.id===id);if(!p)return;
- modal('<h2>'+id+' · Уреди пакет</h2><p>Одреди ги петте играчки што го сочинуваат овој тип пакет. Количините се внесуваат во Залиха.</p><form id="packageForm" class="form-grid section">'+field("title","Име на пакет",p.title)+field("cost","Набавна цена по комплет (PLN)",p.cost,"number",'min="0" step="0.01"')+p.toys.map((t,i)=>'<div class="wide">'+field("toy"+i,"Играчка "+(i+1),t,'text','required')+'</div>').join('')+'</form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="savePackage(\''+id+'\')">Зачувај пакет</button></footer>');
+ modal('<h2>'+id+' · Уреди пакет</h2><p>Одреди ги петте играчки што го сочинуваат овој тип пакет. Количините се внесуваат во Залиха.</p><form id="packageForm" class="form-grid section">'+field("title","Име на пакет",p.title)+p.toys.map((t,i)=>'<div class="wide">'+field("toy"+i,"Играчка "+(i+1),t,'text','required')+'</div>').join('')+'</form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="savePackage(\''+id+'\')">Зачувај пакет</button></footer>');
 }
 function savePackage(id){
  const f=document.getElementById("packageForm");if(!f.reportValidity())return;
  const d=formData("packageForm"),p=db.packages.find(x=>x.id===id);
  if(!p)return;
- p.title=d.title;p.cost=Number(d.cost);p.toys=Array.from({length:5},(_,i)=>d["toy"+i].trim());
+ p.title=d.title;p.toys=Array.from({length:5},(_,i)=>d["toy"+i].trim());
  if(p.toys.some(x=>!x)){alert("Внеси ги сите 5 играчки.");return}
  save();closeModal();render();
 }
@@ -273,15 +273,41 @@ function rotationDetail(id){
 }
 
 function finances(){
- header("Финансии","Наплати и трошоци во еден табеларен преглед.",'<button class="btn" onclick="transactionForm(\'expense\')">+ Трошок</button>');
- const total=db.payments.reduce((n,x)=>n+Number(x.amount),0),costs=db.expenses.reduce((n,x)=>n+Number(x.amount),0);
+ header("Финансии","Автоматски евидентирани наплати и трошоци поврзани со конкретни пакети.",'<button class="btn" onclick="transactionForm(\'expense\')">+ Трошок</button>');
+ const payments=db.payments.reduce((n,x)=>n+Number(x.amount),0),expenses=db.expenses.reduce((n,x)=>n+Number(x.amount),0);
  const rows=[...db.payments.map(x=>({...x,type:"payment"})),...db.expenses.map(x=>({...x,type:"expense"}))].sort((a,b)=>b.date.localeCompare(a.date));
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(total)+'</strong></span><span>Трошоци <strong>'+money(costs)+'</strong></span><span>Салдо <strong>'+money(total-costs)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Датум</th><th>Вид</th><th>Опис</th><th>Износ</th><th></th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+x.date+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.description)+'</td><td>'+money(x.amount)+'</td><td><button class="air-link" onclick="deleteTransaction(\''+x.type+'\',\''+x.id+'\')">Избриши</button></td></tr>').join('')+'</tbody></table></div></div>';
+ const ref=x=>[x.packageId||"",x.stockId?(db.stock.find(s=>s.id===x.stockId)?.code||x.stockId):""].filter(Boolean).join(" · ")||"—";
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Наплати <strong>'+money(payments)+'</strong></span><span>Трошоци <strong>'+money(expenses)+'</strong></span><span>Салдо <strong>'+money(payments-expenses)+'</strong></span></div><div class="work-bar"><strong>Трансакции</strong><span>'+rows.length+' записи</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Датум</th><th>Вид</th><th>Причина</th><th>Пакет / сет</th><th>Опис</th><th>Износ</th><th>Акции</th></tr></thead><tbody>'+rows.map(x=>'<tr><td>'+esc(x.date)+'</td><td><span class="tag '+(x.type==="expense"?"warn":"")+'">'+(x.type==="payment"?"Наплата":"Трошок")+'</span></td><td>'+esc(x.type==="expense"?(x.category||"Друго"):"Претплата")+'</td><td>'+esc(ref(x))+'</td><td>'+esc(x.description||"")+'</td><td>'+money(x.amount)+'</td><td>'+(x.type==="expense"?'<button class="air-link" onclick="deleteTransaction(\'expense\',\''+x.id+'\')">Избриши</button>':'<span class="small muted">Автоматски</span>')+'</td></tr>').join('')+'</tbody></table></div></div>';
 }
-
-function transactionForm(type){if(type!=="expense")return;modal('<h2>'+(type==="payment"?"Нова наплата":"Нов трошок")+'</h2><form id="transactionForm" class="form-grid section">'+field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)",119,"number",'min="0" step="0.01"')+'<div class="wide">'+field("description","Опис","")+'</div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\''+type+'\')">Зачувај</button></footer>')}
-function saveTransaction(type){if(type!=="expense")return;const f=document.getElementById("transactionForm");if(!f.reportValidity())return;const d=formData("transactionForm");d.amount=Number(d.amount);db[type==="payment"?"payments":"expenses"].push({id:uid(),...d});save();closeModal();render()}
-function deleteTransaction(type,id){if(!confirmDelete("Да се избрише трансакцијата?"))return;const key=type==="payment"?"payments":"expenses";db[key]=db[key].filter(x=>x.id!==id);save();render()}
+function expenseStockOptions(packageId){
+ const select=document.getElementById("expenseStock");if(!select)return;
+ const choices=db.stock.filter(s=>s.packageId===packageId&&s.status!=="retired");
+ select.innerHTML='<option value="">Без конкретен сет</option>'+choices.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.code)+'</option>').join("");
+}
+function transactionForm(type){
+ if(type!=="expense")return;
+ modal('<h2>Нов трошок</h2><p>Евидентирај ја вистинската цена на набавката или друг трошок, по потреба поврзан со пакет и сет.</p><form id="transactionForm" class="form-grid section">'+
+ field("date","Датум",iso(new Date()),"date")+field("amount","Износ (PLN)","","number",'min="0.01" step="0.01"')+
+ '<div><label>Причина</label><select name="category" required><option value="Купување играчки">Купување играчки</option><option value="Амбалажа">Амбалажа</option><option value="Достава">Достава</option><option value="Чистење">Чистење</option><option value="Поправка / замена">Поправка / замена</option><option value="Друго">Друго</option></select></div>'+
+ '<div><label>Пакет (ако е поврзан)</label><select name="packageId" id="expensePackage" onchange="expenseStockOptions(this.value)"><option value="">Без пакет</option>'+db.packages.map(p=>'<option value="'+p.id+'">'+p.id+' · '+esc(p.title)+'</option>').join("")+'</select></div>'+
+ '<div class="wide"><label>Физички сет (ако е познат)</label><select name="stockId" id="expenseStock"><option value="">Без конкретен сет</option></select></div>'+
+ '<div class="wide">'+field("description","Опис / што е купено","")+'</div></form>'+
+ '<footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveTransaction(\'expense\')">Зачувај трошок</button></footer>');
+}
+function saveTransaction(type){
+ if(type!=="expense")return;
+ const f=document.getElementById("transactionForm");if(!f.reportValidity())return;
+ const d=formData("transactionForm");d.amount=Number(d.amount);
+ if(!Number.isFinite(d.amount)||d.amount<=0){alert("Внеси валиден износ.");return}
+ if(d.stockId&&!db.stock.some(s=>s.id===d.stockId&&s.packageId===d.packageId)){alert("Избраниот сет не припаѓа на пакетот.");return}
+ db.expenses.push({id:uid(),...d});
+ save();closeModal();render();
+}
+function deleteTransaction(type,id){
+ if(type!=="expense")return;
+ if(!confirmDelete("Да се избрише трошокот?"))return;
+ db.expenses=db.expenses.filter(x=>x.id!==id);save();render();
+}
 function settings(){
  header("Поставки","Бизнис правила, подготовка и локални податоци.");
  const s=db.settings;
