@@ -215,6 +215,7 @@ function receiptPage(){
 }
 function timeline(){
  const view=localStorage.getItem("toysharing_timeline_range")==="1"?1:2;
+ const tab=["tasks","timeline","shipments"].includes(sessionStorage.getItem("toysharing_ops_tab"))?sessionStorage.getItem("toysharing_ops_tab"):"tasks";
  const start=iso(new Date(new Date().getFullYear(),new Date().getMonth(),1));
  const end=addMonths(start,view),orders=operationalPlan();
  const visible=orders.filter(o=>o.start>=start&&o.start<end);
@@ -235,14 +236,15 @@ function timeline(){
  const grid='<div class="air-grid-scroll"><div class="air-grid"><div class="air-grid-header"><div>Клиент</div>'+months.map(m=>'<div>'+new Date(m+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"})+'</div>').join("")+'</div>'+
  db.customers.filter(c=>c.status==="active").map(c=>'<div class="air-grid-row"><div class="air-grid-client"><b>'+esc(c.name)+'</b><span>'+esc(c.child)+'</span></div>'+months.map(m=>{const o=visible.find(x=>x.customer.id===c.id&&x.start>=m&&x.start<addMonths(m,1));if(!o)return '<div class="air-grid-slot"><span class="air-faint">—</span></div>';const cl=classify(o);return '<div class="air-grid-slot"><button class="air-cycle '+cl.key+'" onclick="rotationDetail(\''+o.id+'\')"><span><b>'+o.packageId+'</b><small>'+o.start.slice(8,10)+'. '+new Date(o.start+"T12:00:00").toLocaleDateString("mk-MK",{month:"short"})+'</small></span>'+status(o)+'</button></div>'}).join("")+'</div>').join("")+'</div></div>';
  const table='<div class="air-table-scroll"><table class="air-data"><thead><tr><th>Датум за испраќање</th><th>Клиент / дете</th><th>Пакет</th><th>Физички сет</th><th>Адреса</th><th>Статус</th><th></th></tr></thead><tbody>'+visible.slice().sort((x,y)=>x.dispatch.localeCompare(y.dispatch)).map(o=>'<tr><td>'+esc(o.dispatch)+'</td><td><strong>'+esc(o.customer.name)+'</strong><small>'+esc(o.customer.child)+'</small></td><td><b>'+o.packageId+'</b></td><td>'+esc(o.code)+'</td><td class="air-address">'+esc(o.address)+'</td><td>'+status(o)+'</td><td><button class="air-link" onclick="rotationDetail(\''+o.id+'\')">Управувај <i data-lucide="chevron-right"></i></button></td></tr>').join("")+'</tbody></table></div>';
- header("Преглед · Timeline","Оперативен преглед на пакетите, адресите и ротациите.");
+ header("Операции","Активности, календар на ротации и испораки.");
  document.getElementById("topAction").innerHTML='<div class="air-range"><button class="'+(view===1?"active":"")+'" onclick="timelineRange(1)">Овој месец</button><button class="'+(view===2?"active":"")+'" onclick="timelineRange(2)">Следни 2 месеци</button></div>';
  document.getElementById("content").innerHTML='<div class="air-workspace">'+
+ '<div class="ops-tabs" role="tablist" aria-label="Оперативни прикази"><button role="tab" aria-selected="'+(tab==="tasks")+'" class="'+(tab==="tasks"?"selected":"")+'" onclick="operationsTab(\'tasks\')"><i data-lucide="list-checks"></i> Активности</button><button role="tab" aria-selected="'+(tab==="timeline")+'" class="'+(tab==="timeline"?"selected":"")+'" onclick="operationsTab(\'timeline\')"><i data-lucide="calendar-range"></i> Timeline</button><button role="tab" aria-selected="'+(tab==="shipments")+'" class="'+(tab==="shipments"?"selected":"")+'" onclick="operationsTab(\'shipments\')"><i data-lucide="truck"></i> Испораки</button></div>'+ 
  '<div class="air-metrics"><div><span>Замени</span><strong>'+visible.length+'</strong></div><div><span>Без ризик</span><strong>'+visible.filter(o=>classify(o).key==="ready").length+'</strong></div><div><span>Бараат внимание</span><strong class="air-attention">'+flagged.length+'</strong></div><div class="air-rule"><i data-lucide="clock-3"></i> '+turnaround()+' дена подготовка по враќање</div></div>'+
- renderMonthlyTasks()+'<div class="air-section-title"><h2>Timeline по клиенти</h2><span>Кликни на пакет за управување со испораката</span></div>'+grid+
- '<div class="air-section-title"><h2>Испораки и ротации</h2><span>'+visible.length+' циклуси · '+flagged.length+' за проверка</span></div>'+table+
+ (tab==='tasks'?renderMonthlyTasks():tab==='timeline'?'<div class="air-section-title"><h2>Timeline по клиенти</h2><span>Кликни на пакет за управување со испораката</span></div>'+grid:'<div class="air-section-title"><h2>Испораки и ротации</h2><span>'+visible.length+' циклуси · '+flagged.length+' за проверка</span></div>'+table)+
  '<div class="air-footnote">Ова е план со локално зачувани операции. Зелениот статус е планска достапност, не потврдена InPost испорака. Ризиците се проверуваат за секој конкретен циклус.</div></div>';
 }
+function operationsTab(tab){sessionStorage.setItem("toysharing_ops_tab",tab);timeline();}
 function timelineRange(months){localStorage.setItem("toysharing_timeline_range",String(months));timeline();}
 
 function rotationDetail(id){
