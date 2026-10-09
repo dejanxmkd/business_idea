@@ -340,3 +340,57 @@ html[data-theme="dark"] .task-sheet,html[data-theme="dark"] .task-head,html[data
 html[data-theme="dark"] .customer-tabs{background:#1B2720;border-color:#34443A}
 html[data-theme="dark"] .customer-tab-count{background:#233029;color:#B7C5B9;border-color:#34443A}
 @media(max-width:780px){.customer-tabs{padding:0 16px;gap:16px}}
+
+/* Dark mode: one consistent forest canvas for sidebar and ALL admin pages */
+html[data-theme="dark"]{
+ --dark-canvas:#141D19;
+ --dark-header:#141D19;
+ --dark-divider:#304037;
+ --dark-table-head:#1B2921;
+}
+html[data-theme="dark"] body,
+html[data-theme="dark"] .app,
+html[data-theme="dark"] .sidebar,
+html[data-theme="dark"] .main,
+html[data-theme="dark"] #content,
+html[data-theme="dark"] .top,
+html[data-theme="dark"] .work-surface,
+html[data-theme="dark"] .air-workspace,
+html[data-theme="dark"] .work-scroll,
+html[data-theme="dark"] .air-table-scroll,
+html[data-theme="dark"] .air-grid-scroll,
+html[data-theme="dark"] .table-wrap,
+html[data-theme="dark"] .work-bar,
+html[data-theme="dark"] .air-section-title,
+html[data-theme="dark"] .ops-tabs,
+html[data-theme="dark"] .catalog-tabs,
+html[data-theme="dark"] .customer-tabs,
+html[data-theme="dark"] .task-sheet,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .air-grid-client,
+html[data-theme="dark"] .air-grid-row,
+html[data-theme="dark"] .air-grid-slot,
+html[data-theme="dark"] .drawer{
+ background:var(--dark-canvas)!important;
+}
+html[data-theme="dark"] table,
+html[data-theme="dark"] .work-table,
+html[data-theme="dark"] .air-data,
+html[data-theme="dark"] tbody,
+html[data-theme="dark"] .air-cycle{background:var(--dark-canvas)!important}
+html[data-theme="dark"] th,
+html[data-theme="dark"] .work-table th,
+html[data-theme="dark"] .air-data th,
+html[data-theme="dark"] .air-grid-header,
+html[data-theme="dark"] .air-grid-header>div:first-child,
+html[data-theme="dark"] .task-head{background:var(--dark-table-head)!important}
+html[data-theme="dark"] .air-metrics,
+html[data-theme="dark"] .work-stats{background:var(--dark-canvas)!important}
+html[data-theme="dark"] .work-bar,
+html[data-theme="dark"] .top,
+html[data-theme="dark"] .ops-tabs,
+html[data-theme="dark"] .catalog-tabs,
+html[data-theme="dark"] .customer-tabs,
+html[data-theme="dark"] .task-sheet{border-color:var(--dark-divider)!important}
+html[data-theme="dark"] tbody tr:hover,
+html[data-theme="dark"] .air-cycle:hover{background:#203027!important}
