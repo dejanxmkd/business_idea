@@ -403,3 +403,15 @@ html[data-theme="dark"] .air-cycle:hover{background:#203027!important}
 
 /* Package overflow tooltip: ToySharing coral with white legible copy */
 .toy-more:hover::after,.toy-more:focus-visible::after,html[data-theme="dark"] .toy-more:hover::after,html[data-theme="dark"] .toy-more:focus-visible::after{background:#E86B5B!important;color:#FFFFFF!important;border:1px solid #D85D4F;box-shadow:0 8px 24px #273D2D2B}
+
+/* Shared coral primary actions + persistent drawer footer */
+:root{--primary:#E86B5B;--primary-hover:#D85D4F}
+.btn:not(.light):not(.danger){background:var(--primary)!important;border-color:var(--primary)!important;color:#fff!important}
+.btn:not(.light):not(.danger):hover{background:var(--primary-hover)!important;border-color:var(--primary-hover)!important}
+html[data-theme="dark"] .btn:not(.light):not(.danger){background:#E86B5B!important;border-color:#E86B5B!important;color:#fff!important}
+html[data-theme="dark"] .btn:not(.light):not(.danger):hover{background:#D85D4F!important;border-color:#D85D4F!important}
+.drawer{display:flex;flex-direction:column;min-height:0;padding-bottom:0!important}
+.drawer>footer{position:sticky;bottom:0;z-index:5;flex:0 0 auto;margin-top:auto!important;padding:17px 0 20px!important;background:#fff;border-top:1px solid var(--line);box-shadow:0 -8px 16px -14px #273D2D33}
+html[data-theme="dark"] .drawer>footer{background:var(--dark-canvas,#141D19);border-top-color:var(--line);box-shadow:0 -8px 16px -14px #0008}
+.drawer>footer .btn{min-height:40px}
+@media(max-width:780px){.drawer>footer{padding-bottom:calc(16px + env(safe-area-inset-bottom))!important}}
