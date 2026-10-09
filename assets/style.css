@@ -568,3 +568,20 @@ html[data-theme="dark"] .inventory-detail .inventory-kits th{background:#1B2921!
 html[data-theme="dark"] .inventory-detail .inventory-kits th{color:#B7C5B9!important;border-color:#304037!important}
 html[data-theme="dark"] .inventory-detail .inventory-kits tbody tr:hover td{background:#203027!important}
 @media(max-width:780px){.inventory-detail{padding-left:14px!important}.inventory-detail .inventory-kits{min-width:760px!important}}
+
+/* Full-color inventory statuses with distinct semantic meanings */
+.inventory-kits .tag{border:0!important;box-shadow:none!important;font-weight:800}
+.inventory-kits .tag.status-free{background:#43835A!important;color:#FFFFFF!important}
+.inventory-kits .tag.status-reserved{background:#F2B84F!important;color:#273D2D!important}
+.inventory-kits .tag.status-shipped{background:#E86B5B!important;color:#FFFFFF!important}
+.inventory-kits .tag.status-client{background:#527F9D!important;color:#FFFFFF!important}
+.inventory-kits .tag.status-cleaning{background:#BD7C35!important;color:#FFFFFF!important}
+.work-toys .toy-chip,.work-toys .toy-chip:nth-child(n),.toy-more{background:#E86B5B!important;border:0!important;color:#FFFFFF!important;box-shadow:none!important}
+.toy-more:hover,.toy-more:focus-visible{background:#D85D4F!important;color:#FFFFFF!important}
+html[data-theme="dark"] .inventory-kits .tag.status-free{background:#43835A!important;color:#FFFFFF!important}
+html[data-theme="dark"] .inventory-kits .tag.status-reserved{background:#F2B84F!important;color:#273D2D!important}
+html[data-theme="dark"] .inventory-kits .tag.status-shipped{background:#E86B5B!important;color:#FFFFFF!important}
+html[data-theme="dark"] .inventory-kits .tag.status-client{background:#527F9D!important;color:#FFFFFF!important}
+html[data-theme="dark"] .inventory-kits .tag.status-cleaning{background:#BD7C35!important;color:#FFFFFF!important}
+html[data-theme="dark"] .work-toys .toy-chip,html[data-theme="dark"] .work-toys .toy-chip:nth-child(n),html[data-theme="dark"] .toy-more{background:#E86B5B!important;border:0!important;color:#FFFFFF!important}
+html[data-theme="dark"] .toy-more:hover,html[data-theme="dark"] .toy-more:focus-visible{background:#D85D4F!important}
