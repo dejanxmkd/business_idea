@@ -236,37 +236,28 @@ function exportData(){const a=document.createElement("a");a.href=URL.createObjec
 async function importData(e){const file=e.target.files?.[0];if(!file)return;try{const x=JSON.parse(await file.text());if(!Array.isArray(x.customers)||!Array.isArray(x.packages)||!Array.isArray(x.stock))throw Error("Невалиден формат");if(!confirm("Увозот ќе ги замени сегашните податоци. Продолжи?"))return;db={...seed(),...x};save();render()}catch(err){alert("Не може да се увезе: "+err.message)}}
 function buildDemo(){
  const data=seed();
+ data.settings.buffer=7;
  const people=[
- ["Ана Петровска","Лука",12,"2026-10-15","active"],
- ["Бојан Стојанов","Мила",13,"2026-09-08","active"],
- ["Елена Марковска","Јана",16,"2026-10-22","active"],
- ["Марија Илиевска","Филип",14,"2026-10-03","active"],
- ["Стефан Николов","Ива",18,"2026-10-19","active"],
- ["Катарина Милевска","Марко",12,"2026-11-01","active"],
- ["Игор Ристов","Теа",20,"2026-09-27","paused"],
- ["Сара Јовановска","Нина",15,"2026-10-11","active"],
- ["Никола Арсов","Матеј",17,"2026-09-24","active"],
- ["Јасмина Георгиева","Ема",19,"2026-10-06","active"],
- ["Филип Трајков","Давид",12,"2026-10-28","paused"],
- ["Ивана Костова","Софија",21,"2026-09-14","active"]
+  ["Ана Петровска","Лука",12,"ul. Długa 12, 80-827 Gdańsk"],
+  ["Бојан Стојанов","Мила",13,"ul. Świętojańska 48, 81-391 Gdynia"],
+  ["Елена Марковска","Јана",14,"ul. Grunwaldzka 26, 80-241 Gdańsk"],
+  ["Марија Илиевска","Филип",15,"ul. Kościuszki 7, 81-704 Sopot"],
+  ["Стефан Николов","Ива",16,"ul. Morska 120, 81-225 Gdynia"]
  ];
- data.customers=people.map((p,i)=>({id:"demo-c"+i,name:p[0],child:p[1],email:"demo"+(i+1)+"@example.com",age:p[2],start:p[3],status:p[4],address:["ul. Długa 12, 80-827 Gdańsk","ul. Świętojańska 48, 81-391 Gdynia","ul. Grunwaldzka 26, 80-241 Gdańsk","ul. Kościuszki 7, 81-704 Sopot","ul. Morska 120, 81-225 Gdynia"][i%5],source:"demo"}));
- const ids=["M12","M12","M12","M13","M13","M14","M14","M15","M15","M16","M17","M18","M18","M19","M20","M21"];
- data.stock=ids.map((id,i)=>({id:"demo-s"+i,code:"SET-"+String(i+1).padStart(3,"0"),packageId:id,price:85+(Number(id.slice(1))-12)*5,condition:i%6===0?"Добра":"Многу добра",status:i===14?"cleaning":"ready"}));
- data.payments=[
- ["2026-10-03","Претплата — Марија",119],["2026-10-06","Претплата — Јасмина",119],
- ["2026-10-08","Претплата — Бојан",119],["2026-10-11","Претплата — Сара",119],
- ["2026-10-14","Претплата — Ивана",119],["2026-10-15","Претплата — Ана",119]
- ].map((v,i)=>({id:"dp"+i,date:v[0],description:v[1],amount:v[2]}));
+ data.customers=people.map((p,i)=>({id:"demo-c"+i,name:p[0],child:p[1],email:"demo"+(i+1)+"@example.com",age:p[2],start:"2026-10-01",status:"active",address:p[3],source:"demo"}));
+ // Seven tangible complete toy sets, five allocated for launch day and
+ // M17–M18 prepared for upcoming monthly age progression.
+ const ids=["M12","M13","M14","M15","M16","M17","M18"];
+ data.stock=ids.map((id,i)=>({id:"demo-s"+i,code:"TS-"+id+"-001",packageId:id,price:Number(data.packages.find(p=>p.id===id).cost),condition:"Многу добра",status:"ready"}));
+ data.payments=people.map((p,i)=>({id:"demo-pay"+i,date:"2026-10-01",description:"Претплата за октомври — "+p[0],amount:119}));
  data.expenses=[
- ["2026-10-02","Половни играчки M12–M14",415],["2026-10-04","Амбалажа",84],
- ["2026-10-07","InPost испораки",146],["2026-10-09","Чистење",39],
- ["2026-10-12","Половни играчки M18–M19",240]
- ].map((v,i)=>({id:"de"+i,date:v[0],description:v[1],amount:v[2]}));
+  {id:"demo-exp1",date:"2026-09-28",description:"Набавка на 7 Montessori комплети",amount:ids.reduce((sum,id)=>sum+Number(data.packages.find(p=>p.id===id).cost),0)},
+  {id:"demo-exp2",date:"2026-10-01",description:"Амбалажа за 5 стартни испораки",amount:75}
+ ];
  return data;
 }
 function demo(){
- if(!confirm("Замена со 12 демо-клиенти, 16 физички сетови и пример-финансии?"))return;
+ if(!confirm("Замена со старт на 1 октомври 2026: 5 деца, 7 физички Montessori комплети и пример-финансии?"))return;
  db=buildDemo();save();render();
 }
 
