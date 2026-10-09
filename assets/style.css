@@ -621,3 +621,14 @@ html[data-theme="dark"] .air-workspace .air-grid-header{border-bottom-color:#304
 .work-table td:last-child .air-link,.air-data td:last-child .air-link,
 .inventory-kits td:last-child .air-link{vertical-align:middle}
 @media(max-width:780px){:root{--table-edge-gutter:16px}}
+
+/* Horizontal month grid: fixed columns, horizontal scroll, sticky clients */
+.air-grid{width:max-content!important;min-width:100%!important}
+.air-grid-header,.air-grid-row{display:grid!important;grid-template-columns:220px repeat(var(--timeline-months,1),minmax(185px,1fr))!important;min-width:max(100%, calc(220px + var(--timeline-months,1)*185px))!important}
+.air-grid-header>div:first-child,.air-grid-client{position:sticky!important;left:0;z-index:2}
+.air-grid-scroll{overflow-x:auto!important;overscroll-behavior-x:contain}
+.air-grid-slot{min-width:185px}
+.activity-month-nav{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px}
+.activity-month-nav button{width:30px;height:30px;border:1px solid var(--line);border-radius:6px;color:var(--ink);background:var(--surface);font-size:19px}
+.activity-month-nav button:hover{border-color:var(--sage);background:var(--sage-soft)}
+html[data-theme="dark"] .activity-month-nav button{background:#1B2921;color:#E8EEE8}
