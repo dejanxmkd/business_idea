@@ -59,15 +59,49 @@ function customerForm(id){const c=db.customers.find(x=>x.id===id)||{name:"",emai
 function saveCustomer(id){const f=document.getElementById("customerForm");if(!f.reportValidity())return;const d=formData("customerForm");d.age=Number(d.age);if(id)Object.assign(db.customers.find(x=>x.id===id),d);else db.customers.push({id:uid(),...d});save();closeModal();render()}
 function deleteCustomer(id){if(!confirmDelete("Да се избрише клиентот?"))return;db.customers=db.customers.filter(c=>c.id!==id);save();render()}
 function packages(){
- header("Montessori пакети","Фиксни комплети со по 5 играчки и нивните физички копии.");
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Каталог на пакети</strong><span>'+db.packages.length+' пакети · M12–M23</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Физички копии</th><th>Цена за набавка</th><th></th></tr></thead><tbody>'+db.packages.map(p=>'<tr><td><strong>'+p.id+'</strong></td><td>'+esc(p.title)+'</td><td class="work-toys">'+p.toys.map(t=>'<span>'+esc(t)+'</span>').join('')+'</td><td><span class="tag">'+capacity(p.id)+' копии</span></td><td>'+money(p.cost)+'</td><td><button class="air-link" onclick="packageForm(\''+p.id+'\')">Уреди <i data-lucide="chevron-right"></i></button></td></tr>').join('')+'</tbody></table></div></div>';
+ header("Пакети","Дефинирај ја содржината на секој Montessori пакет. Залихата се управува одделно.");
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Каталог на пакети</strong><span>'+db.packages.length+' типови · 5 играчки по пакет</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Содржина на пакетот</th><th>Набавна цена</th><th>Акции</th></tr></thead><tbody>'+db.packages.map(p=>'<tr><td><strong>'+p.id+'</strong></td><td>'+esc(p.title)+'</td><td class="work-toys">'+p.toys.map(t=>'<span>'+esc(t)+'</span>').join('')+'</td><td>'+money(p.cost)+'</td><td><button class="air-link" onclick="packageForm(\''+p.id+'\')">Уреди <i data-lucide="chevron-right"></i></button></td></tr>').join('')+'</tbody></table></div></div>';
 }
-function packageForm(id){const p=db.packages.find(p=>p.id===id);modal('<h2>'+id+' · Уреди пакет</h2><p>Управување со категорија на пакет и набавна цена.</p><form id="packageForm" class="form-grid section">'+field("title","Име на пакет",p.title,'text','class="input"')+field("cost","Цена на половен сет (PLN)",p.cost,"number",'min="0" step="0.01"')+'<div class="wide"><label>Водич / објаснување</label><textarea name="guide" rows="4">'+esc(p.guide)+'</textarea></div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="savePackage(\''+id+'\')">Зачувај пакет</button></footer>')}
-function savePackage(id){const f=document.getElementById("packageForm");if(!f.reportValidity())return;const d=formData("packageForm"),p=db.packages.find(p=>p.id===id);p.title=d.title;p.cost=Number(d.cost);p.guide=d.guide;save();closeModal();render()}
+function packageForm(id){
+ const p=db.packages.find(x=>x.id===id);if(!p)return;
+ modal('<h2>'+id+' · Уреди пакет</h2><p>Одреди ги петте играчки што го сочинуваат овој тип пакет. Количините се внесуваат во Залиха.</p><form id="packageForm" class="form-grid section">'+field("title","Име на пакет",p.title)+field("cost","Набавна цена по комплет (PLN)",p.cost,"number",'min="0" step="0.01"')+p.toys.map((t,i)=>'<div class="wide">'+field("toy"+i,"Играчка "+(i+1),t,'text','required')+'</div>').join('')+'</form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="savePackage(\''+id+'\')">Зачувај пакет</button></footer>');
+}
+function savePackage(id){
+ const f=document.getElementById("packageForm");if(!f.reportValidity())return;
+ const d=formData("packageForm"),p=db.packages.find(x=>x.id===id);
+ if(!p)return;
+ p.title=d.title;p.cost=Number(d.cost);p.toys=Array.from({length:5},(_,i)=>d["toy"+i].trim());
+ if(p.toys.some(x=>!x)){alert("Внеси ги сите 5 играчки.");return}
+ save();closeModal();render();
+}
 function inventory(){
- header("Залиха","Физички копии од фиксните Montessori пакети.",'<button class="btn" onclick="stockForm()"><i data-lucide="plus"></i> Нов сет</button>');
- const shortages=plan().filter(p=>p.short>0);
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Физички сетови</strong><span>'+db.stock.length+' сетови · '+shortages.length+' пакети со недостиг</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Инвентарен број</th><th>Пакет</th><th>Набавна цена</th><th>Состојба</th><th>Статус</th><th></th></tr></thead><tbody>'+db.stock.map(s=>'<tr><td><strong>'+esc(s.code)+'</strong></td><td>'+esc(s.packageId)+'</td><td>'+money(s.price)+'</td><td>'+esc(s.condition)+'</td><td><span class="tag '+(s.status==="cleaning"?"warn":s.status==="retired"?"bad":"")+'">'+(s.status==="ready"?"Подготвен":s.status==="cleaning"?"На чистење":"Повлечен")+'</span></td><td><button class="air-link" onclick="stockForm(\''+s.id+'\')">Уреди <i data-lucide="chevron-right"></i></button></td></tr>').join("")+'</tbody></table></div><div class="work-bar work-bar-second"><strong>Потребни дополнителни сетови</strong><span>'+shortages.length+' пакети</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Потребни копии</th><th>Постојни копии</th><th>Недостигаат</th></tr></thead><tbody>'+shortages.map(p=>'<tr><td><strong>'+p.id+'</strong></td><td>'+p.need+'</td><td>'+p.have+'</td><td><span class="tag bad">'+p.short+'</span></td></tr>').join("")+'</tbody></table>'+(shortages.length?"":'<div class="empty">Нема планиран недостиг.</div>')+'</div></div>';
+ header("Залиха","Внеси колку физички комплети имаш за секој пакет M12–M23. Количините го хранат Timeline.");
+ const p=plan();
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Залиха по тип пакет</strong><span>'+db.stock.filter(x=>x.status!=="retired").length+' активни физички комплети</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Вкупно комплети</th><th>Подготвени</th><th>На чистење</th><th>Потребни според план</th><th>Недостиг</th><th>Акции</th></tr></thead><tbody>'+p.map(v=>{
+ const stock=db.stock.filter(s=>s.packageId===v.id&&s.status!=="retired");
+ const ready=stock.filter(s=>s.status==="ready").length,cleaning=stock.filter(s=>s.status==="cleaning").length;
+ return '<tr><td><strong>'+v.id+'</strong></td><td>'+esc(v.title)+'</td><td><strong>'+stock.length+'</strong></td><td>'+ready+'</td><td>'+cleaning+'</td><td>'+v.need+'</td><td>'+(v.short?'<span class="tag warn">'+v.short+' недостигаат</span>':'<span class="tag">Доволно</span>')+'</td><td><button class="air-link" onclick="inventoryQuantity(\''+v.id+'\')">Уреди количина <i data-lucide="chevron-right"></i></button></td></tr>';
+ }).join('')+'</tbody></table></div><p class="air-footnote">Една единица = еден целосен комплет од петте играчки дефинирани во „Пакети“. Физичките копии се водат индивидуално во системот за да може Timeline да им доделува конкретни сетови на клиентите. Планираната побарувачка ја вклучува подготовката по враќање.</p></div>';
+}
+function inventoryQuantity(id){
+ const p=db.packages.find(x=>x.id===id);if(!p)return;
+ const current=capacity(id);
+ modal('<h2>Залиха · '+id+'</h2><p>'+esc(p.title)+' · секоја копија е целосен пакет со пет играчки.</p><form id="quantityForm" class="form-grid section"><div class="wide">'+field("quantity","Број на активни комплети",current,"number",'min="0" max="999" step="1" required')+'</div></form><p class="small">Намалувањето е дозволено само за копии што немаат зачувана доделба или испорака.</p><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveInventoryQuantity(\''+id+'\')">Зачувај количина</button></footer>');
+}
+function saveInventoryQuantity(id){
+ const input=document.querySelector('#quantityForm [name="quantity"]');if(!input||!input.reportValidity())return;
+ const q=Number(input.value);if(!Number.isInteger(q)||q<0||q>999){alert("Внеси цел број од 0 до 999.");return}
+ const current=db.stock.filter(x=>x.packageId===id&&x.status!=="retired");
+ const change=q-current.length;
+ if(change>0){
+   for(let i=0;i<change;i++){const key=uid();db.stock.push({id:key,code:"SET-"+id+"-"+key.toUpperCase(),packageId:id,price:Number(db.packages.find(p=>p.id===id)?.cost||0),condition:"Добра",status:"ready"})}
+ }else if(change<0){
+   const reserved=new Set(db.operations.filter(o=>o.stockId).map(o=>o.stockId));
+   const removable=current.filter(x=>!reserved.has(x.id)).reverse();
+   if(removable.length<(-change)){alert("Некои копии се веќе доделени на клиенти. Не можеш да ја намалиш количината под бројот на резервирани комплети.");return}
+   const ids=new Set(removable.slice(0,-change).map(x=>x.id));db.stock=db.stock.filter(x=>!ids.has(x.id));
+ }
+ save();closeModal();render();
 }
 function stockForm(id){const s=db.stock.find(x=>x.id===id)||{code:"SET-"+String(db.stock.length+1).padStart(3,"0"),packageId:"M12",price:85,condition:"Многу добра",status:"ready"};modal('<h2>'+(id?"Уреди сет":"Нов физички сет")+'</h2><form id="stockForm" class="form-grid section">'+field("code","Инвентарен број",s.code)+'<div><label>Тип пакет</label><select name="packageId">'+db.packages.map(p=>'<option value="'+p.id+'">'+p.id+" · "+esc(p.title)+'</option>').join("")+'</select></div>'+field("price","Набавна цена (PLN)",s.price,"number",'min="0" step="0.01"')+field("condition","Состојба",s.condition)+'<div class="wide"><label>Статус</label><select name="status"><option value="ready">Подготвен</option><option value="cleaning">На чистење</option><option value="retired">Повлечен</option></select></div></form><footer><button class="btn light" onclick="closeModal()">Откажи</button><button class="btn" onclick="saveStock(\''+(id||"")+'\')">Зачувај</button></footer>');document.querySelector('#stockForm [name="packageId"]').value=s.packageId;document.querySelector('#stockForm [name="status"]').value=s.status}
 function saveStock(id){const f=document.getElementById("stockForm");if(!f.reportValidity())return;const d=formData("stockForm");d.price=Number(d.price);if(id)Object.assign(db.stock.find(x=>x.id===id),d);else db.stock.push({id:uid(),...d});save();closeModal();render()}
