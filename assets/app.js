@@ -273,7 +273,7 @@ function monthlyTasks(){
    }else if(o.status==="delivered"){action="Организирај враќање";due=o.end}
    else if(o.status==="returned"){action="Исчисти и провери сет";due=o.returnedAt||o.end;kind="warning"}
    return {o,action,due,kind,overdue:due<=today}
- }).filter(x=>x.action&&x.due>=start&&x.due<end).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.due.localeCompare(b.due));
+ }).filter(x=>x.action&&(x.o.status==="planned"?(x.o.start>=start&&x.o.start<end):(x.due>=start&&x.due<end))).sort((a,b)=>Number(b.overdue)-Number(a.overdue)||a.due.localeCompare(b.due));
 }
 function renderMonthlyTasks(){
  const tasks=monthlyTasks(),month=activityMonth();
