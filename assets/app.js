@@ -279,7 +279,7 @@ function renderMonthlyTasks(){
  const tasks=monthlyTasks(),month=activityMonth();
  const name=new Date(month+"T12:00:00").toLocaleDateString("mk-MK",{month:"long",year:"numeric"});
  return '<div class="air-section-title"><h2>Мои активности · '+esc(name)+'</h2><div class="activity-month-nav"><button onclick="activityMonthMove(-1)" aria-label="Претходен месец">‹</button><span>'+tasks.length+' мои задачи</span><button onclick="activityMonthMove(1)" aria-label="Следен месец">›</button></div></div><div class="task-sheet"><div class="task-head"><span>Рок</span><span>Моја задача</span><span>Клиент / пакет</span><span>Приоритет</span><span></span></div>'+
- tasks.map(t=>'<div class="task-row"><span>'+t.due+'</span><strong>'+esc(t.action)+'</strong><span>'+esc(t.o.customer.name)+' · '+t.o.packageId+'</span><span class="task-priority '+t.kind+'">'+(t.overdue?'За реакција':'Планирано')+'</span><button class="air-link" data-task-id="'+esc(t.o.id)+'" onclick="rotationDetail(this.dataset.taskId)">Отвори</button></div>').join('')+
+ tasks.map(t=>'<div class="task-row"><span>'+t.due+'</span><strong>'+esc(t.action)+'</strong><span>'+esc(t.o.customer.name)+' · '+t.o.packageId+'</span><span class="task-priority badge-status '+(t.overdue?'danger':t.kind==='warning'?'warning':t.kind==='waiting'?'waiting':'planned')+'">'+(t.overdue?'За реакција':t.kind==='waiting'?'Се чека':'Планирано')+'</span><button class="air-link" data-task-id="'+esc(t.o.id)+'" onclick="rotationDetail(this.dataset.taskId)">Отвори</button></div>').join('')+
  (tasks.length?'':'<div class="empty">Немаш задачи за овој месец.</div>')+'</div><p class="air-footnote">Потврдувањето на прием се симулира автоматски 30 секунди по испраќање. Не е твоја задача.</p>';
 }
 function scheduleDemoDelivery(){
