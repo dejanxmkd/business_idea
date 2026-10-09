@@ -400,3 +400,6 @@ html[data-theme="dark"] .air-cycle:hover{background:#203027!important}
 .ops-tabs button,.ops-tabs button:hover,.ops-tabs button.selected{box-sizing:border-box;height:56px;min-height:56px;flex:0 0 auto;align-self:stretch;border-width:0 0 2px 0;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800!important;line-height:20px;padding-top:0;padding-bottom:0;transform:none}
 .ops-tabs button{border-bottom-color:transparent}
 .ops-tabs button.selected{border-bottom-color:#E86B5B}
+
+/* Package overflow tooltip: ToySharing coral with white legible copy */
+.toy-more:hover::after,.toy-more:focus-visible::after,html[data-theme="dark"] .toy-more:hover::after,html[data-theme="dark"] .toy-more:focus-visible::after{background:#E86B5B!important;color:#FFFFFF!important;border:1px solid #D85D4F;box-shadow:0 8px 24px #273D2D2B}
