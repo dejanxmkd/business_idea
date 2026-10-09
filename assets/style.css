@@ -122,3 +122,44 @@ textarea{resize:vertical;min-height:75px}
 .grid>.card{display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}
 .grid>.card .metric{order:-1;margin:0 0 4px}
 @media(max-width:760px){.air-metrics>div:not(.air-rule),.work-stats>span{min-width:120px;padding:10px 14px}.air-metrics>div:not(.air-rule)>strong,.work-stats>span>strong{font-size:25px}}
+
+/* Typography scale and 60–30–10 visual balance: neutral / sage / warm accents */
+:root{font-size:15px}
+body{font-size:15px;line-height:1.48}
+.top h1{font-size:26px;line-height:1.34}
+.top p,.work-bar span,.air-section-title>span,.air-rule{font-size:13px}
+h2,.air-section-title h2{font-size:18px}
+.nav a{font-size:14px;min-height:44px}
+.work-table td,.air-data td,td{font-size:14px;line-height:1.5}
+.work-table th,.air-data th,th{font-size:12px;line-height:1.45}
+.work-table td,.air-data td{padding-top:14px;padding-bottom:14px}
+.air-grid-client b,.air-cycle b{font-size:14px}
+.air-grid-client span,.air-cycle small,.work-sub,.air-data small{font-size:12px}
+.air-status,.tag{font-size:12px}
+.air-grid-row{min-height:67px}
+.air-grid-slot{padding-top:8px;padding-bottom:8px}
+.air-cycle{min-height:49px}
+.air-metrics>div:not(.air-rule)>span,.work-stats>span{font-size:13px}
+.air-metrics strong,.work-stats strong{font-size:29px;line-height:1.12;font-weight:800}
+.air-metrics>div:not(.air-rule),.work-stats>span{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:5px}
+.air-metrics>div:not(.air-rule)>strong,.work-stats>span>strong{order:-1}
+label{font-size:13px}input,select,textarea,.input{font-size:14px}
+.btn{font-size:13px;min-height:39px}
+.btn.sm{min-height:33px;font-size:12px}
+.air-range button{font-size:13px}
+.air-link{font-size:13px;color:var(--sage-dark);background:transparent;border:0;border-radius:6px;min-height:34px;padding:5px 9px;margin:-5px -9px;font-weight:800}
+.air-link:hover{color:var(--forest);background:var(--active)}
+.air-link:active{background:#DCE9DC}
+.air-link svg{color:var(--sage)}
+.work-table td:last-child .air-link{white-space:nowrap}
+.air-cycle:hover{border-color:#CEDCCF;background:#F5F8F3}
+.nav a.active{border-left:3px solid var(--sage);padding-left:10px}
+.work-toys span{background:var(--cream);border-color:var(--sand);color:#655844}
+.work-toys span:nth-child(3n){background:#FFF3DC;border-color:#F2E0BA;color:#8A692E}
+.work-toys span:nth-child(4n){background:#FBEDEA;border-color:#F3D4CF;color:#9A5C52}
+.air-metrics .air-attention,.air-status.risk,.tag.warn{color:#986B28}
+.air-status.missing,.tag.bad{color:#B84747}
+.work-bar{background:#FFF}
+.work-scroll,.air-grid-scroll,.air-table-scroll{background:#fff}
+tbody tr:hover{background:#FAF8F3}
+@media(max-width:760px){.top h1{font-size:23px}.work-table td,.air-data td,td{font-size:13px}.nav a{font-size:13px}}
