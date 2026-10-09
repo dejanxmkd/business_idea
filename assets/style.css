@@ -245,3 +245,24 @@ textarea{min-height:84px;resize:vertical}
 .ops-tabs button.selected{color:#273D2D;border-bottom-color:#E86B5B;font-weight:900}
 .ops-tabs button.selected svg{color:#E86B5B}
 @media(max-width:780px){.ops-tabs{gap:15px;padding:0 16px;overflow-x:auto}.ops-tabs button{white-space:nowrap}}
+
+/* Sidebar consistency: identical type weight and dark forest text across states */
+.sidebar .nav a,
+.sidebar .nav a:hover,
+.sidebar .nav a.active,
+.sidebar .nav a.active:hover,
+.sidebar .nav a:focus-visible{
+  font-family:'Nunito',sans-serif!important;
+  font-size:14px!important;
+  font-weight:800!important;
+  color:#273D2D!important;
+}
+.sidebar .nav a svg,
+.sidebar .nav a:hover svg,
+.sidebar .nav a.active svg,
+.sidebar .nav a:focus-visible svg{
+  color:#E86B5B!important;
+  stroke:#E86B5B!important;
+}
+.sidebar .nav a:hover{background:#F7F8F5!important}
+.sidebar .nav a.active{background:#F5F7F2!important}
