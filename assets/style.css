@@ -266,3 +266,6 @@ textarea{min-height:84px;resize:vertical}
 }
 .sidebar .nav a:hover{background:#F7F8F5!important}
 .sidebar .nav a.active{background:#F5F7F2!important}
+
+/* Attention KPI uses the ToySharing coral-orange brand accent */
+.air-metrics strong.air-attention{color:#E86B5B!important}
