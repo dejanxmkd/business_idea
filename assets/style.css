@@ -167,3 +167,19 @@ textarea{min-height:84px;resize:vertical}
 @media(max-width:1080px){.work-settings{grid-template-columns:repeat(2,minmax(0,1fr))}.grid,.program-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:780px){.app{display:block}.sidebar{position:relative;top:auto;height:auto;width:100%;padding:10px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:3px 0 9px}.brand-logo{width:90px}.nav{flex-direction:row;overflow-x:auto}.nav a{white-space:nowrap;font-size:12px;min-height:39px}.sidebar-foot{display:none}.main{width:100%;min-height:calc(100vh - 115px)}.top{min-height:77px;padding:16px}.top h1{font-size:22px}.air-section-title,.work-bar{padding:15px 16px}.air-rule{margin:0;padding:13px 16px}.air-metrics>div:not(.air-rule),.work-stats>span{padding:13px 16px;min-width:130px}.work-settings,.work-actions{padding:18px}.card{padding:18px}.two{grid-template-columns:1fr}.two>.card{border-right:0}.drawer{padding:22px 17px}}
 @media(max-width:490px){.grid,.program-grid,.work-settings,.form-grid{grid-template-columns:1fr}.air-range{width:100%}.air-range button{flex:1}.air-section-title>span{display:none}}
+
+/* Brand-consistent sidebar: flat rows, coral labels, stronger sage highlight */
+.nav a{color:#C65F51;border-radius:0;background:transparent;font-weight:800;transition:background-color .16s ease,color .16s ease}
+.nav a svg{color:inherit;stroke-width:1.75}
+.nav a:hover,.nav a.active,.nav a.active:hover{background:#DCE8D9;color:#B45143}
+.nav a:focus-visible{background:#DCE8D9;outline:2px solid var(--sage);outline-offset:-2px}
+.nav{gap:0}
+.nav a{margin:0}
+/* Package contents: always a single row; overflow exposed via +N tooltip */
+.work-toys{max-width:none;min-width:0;white-space:nowrap;line-height:1.3;overflow:visible}
+.work-toys .toy-chip{display:inline-block;max-width:175px;overflow:hidden;text-overflow:ellipsis;vertical-align:middle;white-space:nowrap;margin:0 5px 0 0;padding:5px 9px;background:#F5F7F2;border:1px solid #E7EAE3;border-radius:6px;color:#526255;font-size:12px;font-weight:700}
+.work-toys .toy-chip:nth-child(n){background:#F5F7F2;border-color:#E7EAE3;color:#526255}
+.toy-more{position:relative;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;min-height:28px;padding:4px 10px;border:1px solid #DAE3D8;border-radius:6px;background:#F0F4EE;color:#4F7056;font:800 12px 'Nunito',sans-serif;white-space:nowrap;cursor:help}
+.toy-more:hover,.toy-more:focus-visible{background:#E8EFE6}
+.toy-more:hover::after,.toy-more:focus-visible::after{content:attr(data-tooltip);position:absolute;z-index:15;right:0;bottom:calc(100% + 9px);width:max-content;max-width:min(360px,75vw);white-space:normal;text-align:left;padding:10px 12px;background:#273D2D;color:#fff;border-radius:8px;box-shadow:0 8px 22px #273D2D25;font-size:12px;font-weight:700;line-height:1.5;pointer-events:none}
+.work-table td.work-toys{white-space:nowrap}
