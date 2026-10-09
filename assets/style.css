@@ -496,3 +496,25 @@ html[data-theme="dark"] .inventory-kits,html[data-theme="dark"] .inventory-kits 
 /* Destructive table action uses brand coral instead of standard green */
 .air-link.delete-action,html[data-theme="dark"] .air-link.delete-action{color:#E86B5B!important;border-color:#E86B5B55!important;background:transparent!important}
 .air-link.delete-action:hover,html[data-theme="dark"] .air-link.delete-action:hover{color:#D85D4F!important;background:#E86B5B16!important;border-color:#E86B5B88!important}
+
+/* ToySharing package contents: coral chips, deep forest overflow tooltip */
+.work-toys .toy-chip,
+.work-toys .toy-chip:nth-child(n){
+ color:#C75D4D!important;
+ background:#FFF0EC!important;
+ border-color:#F4C8BF!important;
+}
+.toy-more{color:#C75D4D!important;background:#FFF0EC!important;border-color:#F4C8BF!important}
+.toy-more:hover,.toy-more:focus-visible{background:#FBE2DB!important}
+.toy-more:hover::after,.toy-more:focus-visible::after{
+ background:#1B3024!important;color:#FFFFFF!important;border:1px solid #344D3B!important;
+}
+html[data-theme="dark"] .work-toys .toy-chip,
+html[data-theme="dark"] .work-toys .toy-chip:nth-child(n){
+ color:#F29B8C!important;background:#3D2826!important;border-color:#714039!important;
+}
+html[data-theme="dark"] .toy-more{color:#F29B8C!important;background:#3D2826!important;border-color:#714039!important}
+html[data-theme="dark"] .toy-more:hover,html[data-theme="dark"] .toy-more:focus-visible{background:#50312D!important}
+html[data-theme="dark"] .toy-more:hover::after,html[data-theme="dark"] .toy-more:focus-visible::after{
+ background:#0C1711!important;color:#FFFFFF!important;border:1px solid #2B4533!important;
+}
