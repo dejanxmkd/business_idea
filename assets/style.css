@@ -518,3 +518,25 @@ html[data-theme="dark"] .toy-more:hover,html[data-theme="dark"] .toy-more:focus-
 html[data-theme="dark"] .toy-more:hover::after,html[data-theme="dark"] .toy-more:focus-visible::after{
  background:#0C1711!important;color:#FFFFFF!important;border:1px solid #2B4533!important;
 }
+
+/* Clean compact inline kit details, without a nested full table */
+.inventory-detail{padding:10px 30px 15px 52px;background:var(--surface)}
+.inventory-detail-head{padding:8px 0 12px;border-bottom:1px solid var(--line)}
+.kit-list{width:100%}
+.kit-list-row{display:grid;grid-template-columns:minmax(145px,1.1fr) 115px minmax(180px,1.6fr) auto;align-items:center;gap:18px;padding:12px 2px;border-bottom:1px solid var(--line-soft);min-height:53px}
+.kit-list-row:last-child{border-bottom:0}
+.kit-code{font-size:13px;font-weight:800;color:var(--ink);overflow-wrap:anywhere}
+.kit-state{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;color:var(--muted);white-space:nowrap}
+.kit-state-dot{width:7px;height:7px;border-radius:50%;background:#92A296;flex-shrink:0}
+.kit-state.available .kit-state-dot{background:#64866B}
+.kit-state.booked .kit-state-dot{background:#F2B84F}
+.kit-state.busy .kit-state-dot{background:#E86B5B}
+.kit-owner{font-size:12px;color:var(--ink);min-width:0}
+.kit-owner small{display:block;margin-top:2px;font-size:11px;color:var(--muted)}
+.kit-actions{display:flex;justify-content:flex-end;gap:10px}
+.kit-edit{padding:4px 0;background:transparent;border:0;color:var(--sage-strong);font:800 12px 'Nunito',sans-serif;white-space:nowrap}
+.kit-edit:hover{color:var(--coral);text-decoration:underline;text-underline-offset:3px}
+html[data-theme="dark"] .inventory-detail{background:#19271F}
+html[data-theme="dark"] .kit-state-dot{border:1px solid #29382F}
+@media(max-width:950px){.kit-list-row{grid-template-columns:minmax(135px,1fr) 110px minmax(145px,1.4fr) auto;gap:9px}}
+@media(max-width:700px){.inventory-detail{padding:9px 14px}.kit-list-row{grid-template-columns:minmax(0,1fr) auto;gap:8px}.kit-state{justify-self:end}.kit-owner{grid-column:1}.kit-actions{grid-column:2;grid-row:2}}
