@@ -108,16 +108,14 @@ function inventory(){
  const childRows=(id)=>{
    const sets=db.stock.filter(s=>s.packageId===id&&s.status!=="retired");
    if(!sets.length)return '<div class="inventory-empty">Нема физички сетови. Избери „Уреди количина“ за да додадеш.</div>';
-   return '<div class="kit-list">'+sets.map(kit=>{
+   return '<table class="inventory-kits"><thead><tr><th>Физички сет</th><th>Статус</th><th>Кај кого е / следен клиент</th><th>Период</th><th>Акција</th></tr></thead><tbody>'+sets.map(kit=>{
      const holding=holdings.find(h=>h.stockId===kit.id);
      const future=allOrders.find(o=>o.stockId===kit.id&&o.status==="planned"&&o.end>=today);
      const current=holding?.order,assigned=current||future;
      const label=current?(holding.step==="shipped"?"Испратен":"Кај клиент"):kit.status==="cleaning"?"На чистење":future?"Резервиран":"Слободен";
-     const tone=current?"busy":kit.status==="cleaning"?"busy":future?"booked":"available";
-     const owner=assigned?esc(assigned.customer.name)+' · '+esc(assigned.child||assigned.customer.child):'Нема доделен клиент';
-     const period=assigned?esc(assigned.start)+' – '+esc(assigned.end):'';
-     return '<div class="kit-list-row"><span class="kit-code">'+esc(kit.code)+'</span><span class="kit-state '+tone+'"><span class="kit-state-dot"></span>'+label+'</span><span class="kit-owner">'+owner+(period?'<small>'+period+'</small>':'')+'</span><span class="kit-actions"><button class="kit-edit" onclick="stockForm(\''+esc(kit.id)+'\')">Уреди</button>'+(current?'<button class="kit-edit" onclick="rotationDetail(\''+esc(current.id)+'\')">Испорака</button>':'')+'</span></div>';
-   }).join("")+'</div>';
+     const kind=current||kit.status==="cleaning"?"warn":"";
+     return '<tr><td><strong>'+esc(kit.code)+'</strong></td><td><span class="tag '+kind+'">'+label+'</span></td><td>'+(assigned?esc(assigned.customer.name)+'<small class="work-sub">'+esc(assigned.customer.child)+'</small>':'—')+'</td><td>'+(assigned?esc(assigned.start)+' → '+esc(assigned.end):'—')+'</td><td><button class="air-link" onclick="stockForm(\''+esc(kit.id)+'\')">Уреди сет</button>'+(current?'<button class="air-link" onclick="rotationDetail(\''+esc(current.id)+'\')">Испорака</button>':'')+'</td></tr>';
+   }).join("")+'</tbody></table>';
  };
  document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Залиха по тип пакет</strong><span>'+db.stock.filter(x=>x.status!=="retired").length+' активни физички комплети</span></div><div class="work-scroll"><table class="work-table inventory-summary"><thead><tr><th>Пакет</th><th>Програма</th><th>Вкупно комплети</th><th>Подготвени</th><th>На чистење</th><th>Потребни според план</th><th>Недостиг</th><th>Акции</th></tr></thead><tbody>'+rows.map(v=>{
  const stock=db.stock.filter(s=>s.packageId===v.id&&s.status!=="retired");
