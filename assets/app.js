@@ -203,8 +203,9 @@ function operationalPlan(){
      if(op.step==="returned")state="processing";
      if(op.step==="cleaned")state="done";
    }
-   const description=!kit?"Нема слободен физички сет во Залиха.":conflict?"Сетот е веќе доделен или недостапен; потребна е друга физичка копија.":op.step==="shipped"||op.step==="delivered"?"Сетот е кај клиент и не е достапен за друга испорака.":"Планирана достапност; провери и подготви ја испораката.";
-   result.push({...order,stockId:kit?.id||"",code:kit?.code||"—",state,status:op.step||"planned",description,conflict,blockedByReturn,address:order.customer.address||"Нема внесена адреса",returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?desired.until:"",buffer:turnaround()});
+   const availability=!kit?(kitPool.length===0?"out-of-stock":kitPool.every(x=>x.status==="cleaning")?"cleaning":"unavailable"):conflict?"unavailable":kit.status==="cleaning"?"cleaning":op.step==="shipped"||op.step==="delivered"?"in-use":"available";
+   const description=availability==="out-of-stock"?"Нема физички сет од овој тип во Залиха.":availability==="unavailable"?"Сите сетови се доделени или недостапни за овој период.":availability==="cleaning"?"Сетовите се на чистење.":"Планирана достапност; провери и подготви ја испораката.";
+   result.push({...order,stockId:conflict?"":kit?.id||"",code:conflict?"—":kit?.code||"—",availability,state,status:op.step||"planned",description,conflict,blockedByReturn,address:order.customer.address||"Нема внесена адреса",returnedAt:op.returnedAt||"",cleanedAt:op.cleanedAt||"",tracking:op.tracking||"",opStockId:op.stockId||"",readyAfter:kit?desired.until:"",buffer:turnaround()});
  }
  return result;
 }
@@ -267,7 +268,9 @@ function monthlyTasks(){
    let action="",due="",kind="normal";
    if(o.status==="planned"){
      due=o.dispatch;
-     if(o.state==="missing"||o.conflict){action="Обезбеди физички сет";kind="danger"}
+     if(o.availability==="out-of-stock"){action="Набави физички сет";kind="danger"}
+     else if(o.availability==="unavailable"||o.conflict){action="Обезбеди слободен сет";kind="danger"}
+     else if(o.availability==="cleaning"){action="Подготви сет по чистење";kind="warning"}
      else if(!o.customer.address){action="Внеси адреса";kind="danger"}
      else{action=o.state==="risk"?"Провери и подготви сет":"Подготви и испрати";kind=o.state==="risk"?"warning":"normal"}
    }else if(o.status==="delivered"){action="Организирај враќање";due=o.end}
@@ -327,7 +330,9 @@ function timeline(){
  // A package is actionable only when it has a physical set, an address,
  // enough prep time before outbound shipping, and confirmed workflow steps.
  const classify=o=>{
-   if(o.state==="missing"||o.conflict)return {key:"missing",text:"Недостиг",why:"Нема слободна физичка копија за овој циклус."};
+   if(o.availability==="out-of-stock")return {key:"missing",text:"Нема залиха",why:"Нема регистриран физички сет од овој тип."};
+   if(o.availability==="cleaning")return {key:"risk",text:"На чистење",why:"Сетовите моментално се на чистење."};
+   if(o.availability==="unavailable"||o.state==="missing"||o.conflict)return {key:"missing",text:"Недостапен",why:"Сетовите се резервирани или испратени на други клиенти."};
    if(!o.customer.address)return {key:"risk",text:"Ризик",why:"Недостасува адреса за испорака."};
    if(o.state==="risk")return {key:"risk",text:"Ризик",why:"Сетот е на чистење и нема потврда дека е подготвен."};
    if((o.status==="planned")&&o.dispatch<=today)return {key:"risk",text:"Ризик",why:"Рокот за испраќање е достигнат или поминат."};
