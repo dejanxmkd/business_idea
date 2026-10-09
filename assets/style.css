@@ -242,7 +242,7 @@ textarea{min-height:84px;resize:vertical}
 .ops-tabs button svg{width:16px;height:16px;color:#9BA69C;stroke-width:1.75}
 .ops-tabs button:hover{color:#4F7056;background:transparent!important}
 .ops-tabs button:hover svg{color:#64866B}
-.ops-tabs button.selected{color:#273D2D;border-bottom-color:#E86B5B;font-weight:900}
+.ops-tabs button.selected{color:#273D2D;border-bottom-color:#E86B5B;font-weight:800}
 .ops-tabs button.selected svg{color:#E86B5B}
 @media(max-width:780px){.ops-tabs{gap:15px;padding:0 16px;overflow-x:auto}.ops-tabs button{white-space:nowrap}}
 
@@ -394,3 +394,9 @@ html[data-theme="dark"] .customer-tabs,
 html[data-theme="dark"] .task-sheet{border-color:var(--dark-divider)!important}
 html[data-theme="dark"] tbody tr:hover,
 html[data-theme="dark"] .air-cycle:hover{background:#203027!important}
+
+/* Stable tab geometry: equal font weight, reserved underline and fixed box height */
+.ops-tabs{align-items:stretch;height:56px;min-height:56px}
+.ops-tabs button,.ops-tabs button:hover,.ops-tabs button.selected{box-sizing:border-box;height:56px;min-height:56px;flex:0 0 auto;align-self:stretch;border-width:0 0 2px 0;font-family:'Nunito',sans-serif;font-size:14px;font-weight:800!important;line-height:20px;padding-top:0;padding-bottom:0;transform:none}
+.ops-tabs button{border-bottom-color:transparent}
+.ops-tabs button.selected{border-bottom-color:#E86B5B}
