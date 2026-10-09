@@ -53,7 +53,10 @@ function catalogTabs(active){
  const tabs=document.createElement("nav");
  tabs.className="catalog-tabs";tabs.setAttribute("aria-label","Залиха и пакети");
  tabs.innerHTML='<a href="inventory.html" class="'+(active==="inventory"?"selected":"")+'" '+(active==="inventory"?'aria-current="page"':'')+'>Залиха</a><a href="packages.html" class="'+(active==="packages"?"selected":"")+'" '+(active==="packages"?'aria-current="page"':'')+'>Дефиниција на пакети</a>';
- content.prepend(tabs);
+ const stats=document.createElement("div");
+ stats.className="work-stats";
+ stats.innerHTML='<span>Типови пакети по возраст <strong>'+db.packages.length+'</strong></span><span>Физички комплети <strong>'+db.stock.filter(x=>x.status!=="retired").length+'</strong></span>';
+ content.prepend(stats,tabs);
 }
 function dashboard(){
  header("Контролна табла","Оперативен преглед на Montessori претплатите и ротациите");
@@ -91,7 +94,7 @@ function savePackage(id){
 function inventory(){
  header("Залиха","Внеси колку физички комплети имаш за секој пакет M12–M23. Количините го хранат Timeline.");
  const p=plan();
- document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-stats"><span>Типови пакети по возраст <strong>'+db.packages.length+'</strong></span><span>Физички комплети <strong>'+db.stock.filter(x=>x.status!=="retired").length+'</strong></span></div><div class="work-bar"><strong>Залиха по тип пакет</strong><span>'+db.stock.filter(x=>x.status!=="retired").length+' активни физички комплети</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Вкупно комплети</th><th>Подготвени</th><th>На чистење</th><th>Потребни според план</th><th>Недостиг</th><th>Акции</th></tr></thead><tbody>'+p.map(v=>{
+ document.getElementById("content").innerHTML='<div class="work-surface"><div class="work-bar"><strong>Залиха по тип пакет</strong><span>'+db.stock.filter(x=>x.status!=="retired").length+' активни физички комплети</span></div><div class="work-scroll"><table class="work-table"><thead><tr><th>Пакет</th><th>Програма</th><th>Вкупно комплети</th><th>Подготвени</th><th>На чистење</th><th>Потребни според план</th><th>Недостиг</th><th>Акции</th></tr></thead><tbody>'+p.map(v=>{
  const stock=db.stock.filter(s=>s.packageId===v.id&&s.status!=="retired");
  const ready=stock.filter(s=>s.status==="ready").length,cleaning=stock.filter(s=>s.status==="cleaning").length;
  return '<tr><td><strong>'+v.id+'</strong></td><td>'+esc(v.title)+'</td><td><strong>'+stock.length+'</strong></td><td>'+ready+'</td><td>'+cleaning+'</td><td>'+v.need+'</td><td>'+(v.short?'<span class="tag warn">'+v.short+' недостигаат</span>':'<span class="tag">Доволно</span>')+'</td><td><button class="air-link" onclick="inventoryQuantity(\''+v.id+'\')">Уреди количина <i data-lucide="chevron-right"></i></button></td></tr>';
