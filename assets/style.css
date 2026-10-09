@@ -544,3 +544,27 @@ html[data-theme="dark"] .kit-state-dot{border:1px solid #29382F}
 /* Delete button follows ToySharing primary coral treatment */
 .air-link.delete-action,html[data-theme="dark"] .air-link.delete-action{background:#E86B5B!important;border:1px solid #E86B5B!important;color:#FFFFFF!important;border-radius:8px!important;padding:7px 12px!important}
 .air-link.delete-action:hover,html[data-theme="dark"] .air-link.delete-action:hover{background:#D85D4F!important;border-color:#D85D4F!important;color:#FFFFFF!important}
+
+/* Restored inventory details table — same head/row styling as all workspace grids */
+.inventory-detail{padding:0 0 0 30px!important;background:transparent!important}
+.inventory-detail-head{padding:15px 20px!important;border-bottom:1px solid var(--line)}
+.inventory-detail .inventory-kits{width:100%!important;border-collapse:collapse!important;background:transparent!important}
+.inventory-detail .inventory-kits thead,
+.inventory-detail .inventory-kits thead tr,
+.inventory-detail .inventory-kits th{background:var(--surface)!important}
+.inventory-detail .inventory-kits th{color:var(--muted)!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;padding:12px 16px!important;font-weight:900!important}
+.inventory-detail .inventory-kits td{padding:12px 16px!important;border-bottom:1px solid var(--line-soft)!important;font-size:13px}
+.inventory-detail .inventory-kits tbody tr:last-child td{border-bottom:0!important}
+.inventory-detail .inventory-kits td:last-child{text-align:right;white-space:nowrap}
+.inventory-detail .inventory-kits .air-link{margin:0 0 0 10px!important}
+.inventory-detail .inventory-kits .air-link:first-child{margin-left:0!important}
+html[data-theme="dark"] .inventory-detail,
+html[data-theme="dark"] .inventory-detail .inventory-kits,
+html[data-theme="dark"] .inventory-detail .inventory-kits tbody,
+html[data-theme="dark"] .inventory-detail .inventory-kits td{background:#141D19!important}
+html[data-theme="dark"] .inventory-detail .inventory-kits thead,
+html[data-theme="dark"] .inventory-detail .inventory-kits thead tr,
+html[data-theme="dark"] .inventory-detail .inventory-kits th{background:#1B2921!important}
+html[data-theme="dark"] .inventory-detail .inventory-kits th{color:#B7C5B9!important;border-color:#304037!important}
+html[data-theme="dark"] .inventory-detail .inventory-kits tbody tr:hover td{background:#203027!important}
+@media(max-width:780px){.inventory-detail{padding-left:14px!important}.inventory-detail .inventory-kits{min-width:760px!important}}
