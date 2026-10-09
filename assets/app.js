@@ -113,7 +113,7 @@ function inventory(){
      const future=allOrders.find(o=>o.stockId===kit.id&&o.status==="planned"&&o.end>=today);
      const current=holding?.order,assigned=current||future;
      const label=current?(holding.step==="shipped"?"Испратен":"Кај клиент"):kit.status==="cleaning"?"На чистење":future?"Резервиран":"Слободен";
-     const kind=current||kit.status==="cleaning"?"warn":"";
+     const kind=current?(holding.step==="shipped"?"status-shipped":"status-client"):kit.status==="cleaning"?"status-cleaning":future?"status-reserved":"status-free";
      return '<tr><td><strong>'+esc(kit.code)+'</strong></td><td><span class="tag '+kind+'">'+label+'</span></td><td>'+(assigned?esc(assigned.customer.name)+'<small class="work-sub">'+esc(assigned.customer.child)+'</small>':'—')+'</td><td>'+(assigned?esc(assigned.start)+' → '+esc(assigned.end):'—')+'</td><td><button class="air-link" onclick="stockForm(\''+esc(kit.id)+'\')">Уреди сет</button>'+(current?'<button class="air-link" onclick="rotationDetail(\''+esc(current.id)+'\')">Испорака</button>':'')+'</td></tr>';
    }).join("")+'</tbody></table>';
  };
