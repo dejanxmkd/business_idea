@@ -666,3 +666,11 @@ html[data-theme="dark"] .task-row{border-bottom-color:#2B3930!important}
 .air-grid[style*="--timeline-months:3"] .air-grid-header,.air-grid[style*="--timeline-months:3"] .air-grid-row{grid-template-columns:220px repeat(3,minmax(235px,1fr))!important;width:100%!important;min-width:925px!important}
 .timeline-period-note{display:inline-block;font-size:13px;font-weight:800;color:var(--muted)}
 @media(max-width:780px){.air-grid[style*="--timeline-months:3"] .air-grid-header,.air-grid[style*="--timeline-months:3"] .air-grid-row{grid-template-columns:175px repeat(3,235px)!important;min-width:880px!important}}
+
+/* Full-color semantic badges in monthly activities */
+.task-row .task-priority.badge-status{display:inline-flex;align-items:center;justify-content:center;justify-self:start;width:max-content;min-height:27px;padding:4px 11px;border:0!important;border-radius:999px;font:800 12px 'Nunito',sans-serif;line-height:19px;white-space:nowrap}
+.task-row .badge-status.danger,html[data-theme="dark"] .task-row .badge-status.danger{background:#C94747!important;color:#fff!important}
+.task-row .badge-status.warning,html[data-theme="dark"] .task-row .badge-status.warning{background:#C58A2C!important;color:#fff!important}
+.task-row .badge-status.waiting,html[data-theme="dark"] .task-row .badge-status.waiting{background:#527F9D!important;color:#fff!important}
+.task-row .badge-status.planned{background:#64866B!important;color:#fff!important}
+html[data-theme="dark"] .task-row .badge-status.planned{background:#43835A!important;color:#fff!important}
