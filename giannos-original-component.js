@@ -416,7 +416,7 @@ function drawLayer(cv, w, h, layer, seed, pal, scheme) {
             ctx.stroke();
         }
     }
-    const shape = pal.shape;
+    const shape = 0.19; // Narrow, lanceolate olive leaves; preserve original canopy geometry and motion
     const vein = layer >= 2;
     for (const f of plan.leaves) {
         const c = Math.cos(f.a) * dpr;
@@ -1000,7 +1000,7 @@ export default function OverstoryStudioLanding({ brand = "Overstory", links = DE
         timeZone: footer?.timeZone || DEFAULT_FOOTER.timeZone,
         note: footer?.note || DEFAULT_FOOTER.note,
     };
-    const pal = SEASONS[season] || SEASONS.summer;
+    const pal = season === "summer" ? { ...SEASONS.summer, shadow: [35, 55, 30], mid: [74, 99, 61], lit: [133, 153, 111], glow: [194, 203, 168], twig: [87, 78, 58], accent: "#536747", soft: "#bac7a3", shape: 0.19 } : SEASONS[season] || SEASONS.summer;
     const [scheme, setScheme] = React.useState("light");
     const [override, setOverride] = React.useState(null);
     const [still, setStill] = React.useState(false);
