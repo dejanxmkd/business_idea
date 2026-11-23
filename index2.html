@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Overstory Studio — Original ZIP Preview</title>
+<title>GIANNOS — Greek Extra Virgin Olive Oil</title>
 <link rel="preconnect" href="https://esm.sh">
 <script type="importmap">
 {"imports":{
@@ -16,12 +16,94 @@
 <style>html,body,#root{margin:0;width:100%;min-height:100%;}body{background:#f4f4ee;}#loading{position:fixed;inset:0;display:grid;place-items:center;font:500 15px/1.5 system-ui;color:#273722}#error{white-space:pre-wrap;color:#a22;padding:24px;font:14px monospace}</style>
 </head>
 <body>
-<div id="root"><div id="loading">Loading original Overstory Studio landing…</div></div>
+<div id="root"><div id="loading">Loading GIANNOS story…</div></div>
 <script type="module">
 import React from "react";
 import {createRoot} from "react-dom/client";
 import OverstoryStudioLanding from "./giannos-original-component.js";
-createRoot(document.getElementById("root")).render(React.createElement(OverstoryStudioLanding));
+const giannosContent = {
+brand: "GIANNOS",
+status: "GREEK EXTRA VIRGIN OLIVE OIL",
+hero: {
+ lead: "From Greece.",
+ words: ["NATURE.", "TRADITION.", "FLAVOR."],
+ tail: "To your table.",
+ trusted: "Everyday taste matters.",
+ cue: "Scroll to discover the story"
+},
+links: [
+ {label:"Our Story",href:"#about"},
+ {label:"The Olive Oil",href:"#services"},
+ {label:"Discover",href:"#work"},
+ {label:"Our Process",href:"#process"},
+ {label:"Questions",href:"#faq"}
+],
+logos: [],
+manifesto: {
+ kicker:"Where the story begins",
+ text:"It begins with an olive. Under the Greek sun. A simple ingredient, shaped by nature. [chart] Carefully made into extra virgin olive oil, and brought to the everyday table. Because everyday taste matters."
+},
+stats:[
+ {value:100,suffix:"%",label:"Extra virgin olive oil"},
+ {value:2,label:"Formats: 500ml & 3L"},
+ {value:20,suffix:"%",label:"Maximum advertised subscription saving"}
+],
+services:{
+ kicker:"The essence",
+ title:"An everyday ingredient. An extraordinary tradition.",
+ text:"Explore the little details behind GIANNOS. Each chapter opens only when you choose to discover more.",
+ items:[
+  {title:"Rooted in Greece",art:"brand",time:"01 / ORIGIN",text:"GIANNOS is a product of Greece. A story inspired by the place where olive oil is part of everyday life.",tags:["Product of Greece","Mediterranean inspiration","Everyday taste"]},
+  {title:"Made from olives",art:"product",time:"02 / THE OIL",text:"GIANNOS Greek Extra Virgin Olive Oil is obtained directly from olives and solely by mechanical means, as stated on the product label.",tags:["Extra virgin","Directly from olives","Mechanical means"]},
+  {title:"Protected for everyday use",art:"system",time:"03 / THE CARE",text:"Keep the oil in a cool, dry place, away from light and heat. Simple care helps protect the product in your kitchen.",tags:["Store cool and dry","Away from light","Away from heat"]},
+  {title:"A place at every table",art:"site",time:"04 / THE EXPERIENCE",text:"From a finishing drizzle to a familiar family recipe, GIANNOS is made to bring a taste of Greece to everyday meals.",tags:["Drizzling","Dipping","Everyday cooking"]}
+ ]
+},
+work:{
+ kicker:"Meet GIANNOS",
+ title:"One story. Two ways to enjoy it.",
+ next:"Explore the full story",
+ items:[
+  {client:"GIANNOS 500ml",mark:"leaf",kind:"Glass bottle",title:"Your everyday bottle of Greek Extra Virgin Olive Oil.",metric:"$15",metricLabel:"Starting price · 500ml",year:"500ml",mock:"mobile",tint:["#e8e8ce","#a8bc53"]},
+  {client:"GIANNOS 3L",mark:"leaf",kind:"Metal tin",title:"More of what you love. A generous 3-liter format.",metric:"$50",metricLabel:"Starting price · 3L",year:"3L",mock:"dashboard",tint:["#e6e4c6","#a4b543"]}
+ ]
+},
+process:{
+ kicker:"The journey",
+ title:"From the olive to the everyday table.",
+ steps:[
+ {name:"Origin",when:"01 / GREECE",title:"It starts in Greece.",text:"The journey begins with olives and a Mediterranean food tradition."},
+ {name:"Olive",when:"02 / INGREDIENT",title:"Simply olives.",text:"Extra virgin olive oil obtained directly from olives."},
+ {name:"Craft",when:"03 / EXTRACTION",title:"Solely mechanical means.",text:"The extraction method is stated on GIANNOS packaging. No invented processing claims — just the product's own facts."},
+ {name:"Table",when:"04 / ENJOY",title:"Everyday taste matters.",text:"Drizzle. Dip. Cook. Make room for a little Greek flavor in your routine."}
+ ]
+},
+quotes:null,
+pricing:null,
+faq:{
+ kicker:"The details",
+ title:"Curious about GIANNOS?",
+ text:"The essentials, without interrupting the story.",
+ items:[
+ {q:"What is GIANNOS?",a:"GIANNOS is Greek Extra Virgin Olive Oil, labeled as a product of Greece."},
+ {q:"What sizes are available?",a:"The provided collection shows a 500ml glass bottle and a 3L tin."},
+ {q:"How much does it cost?",a:"The supplied product pages show prices starting at $15 for 500ml and $50 for 3L. Final prices depend on your purchase options."},
+ {q:"Is there a subscription?",a:"Yes. The supplied subscription designs show savings of 10% for a single item, 15% for selected multipacks and 20% for larger multipacks, with frequency selection. The exact total is shown at checkout."},
+ {q:"How should I store the olive oil?",a:"Store in a cool, dry place away from light and heat, following the product label."}
+ ]
+},
+cta:{title:"A little Greece in every day.",text:"Discover Greek Extra Virgin Olive Oil in a 500ml bottle or a 3L tin.",button:"Explore the collection"},
+footer:{
+ columns:[
+ {title:"Explore",links:[{label:"The story",href:"#about"},{label:"The oil",href:"#services"},{label:"Collection",href:"#work"}]},
+ {title:"Discover",links:[{label:"Our process",href:"#process"},{label:"Questions",href:"#faq"}]},
+ {title:"GIANNOS",links:[{label:"Back to top",href:"#top"}]}
+ ],
+ city:"Greece",timeZone:"Europe/Athens",note:"Everyday taste matters."
+},
+email:"",currency:"$",season:"summer",theme:"light",themeToggle:false
+};
+createRoot(document.getElementById("root")).render(React.createElement(OverstoryStudioLanding, giannosContent));
 </script>
 </body>
 </html>
