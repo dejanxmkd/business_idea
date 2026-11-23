@@ -1,20 +1,27 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#25371e"><title>GIANNOS — Storytelling Landing Preview</title>
-<link rel="preconnect" href="https://esm.sh"><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Bodoni+Moda:wght@400;500;600&display=swap" rel="stylesheet">
-<style>html,body,#root{margin:0;min-height:100%;width:100%}body{background:#f8f5e9}#loading{position:fixed;inset:0;display:grid;place-content:center;text-align:center;color:#25371e;font-family:Inter,sans-serif;gap:14px}#loading strong{font-size:28px;letter-spacing:.2em}#loading small{font-size:11px;letter-spacing:.15em;text-transform:uppercase}.ovs-root{--ovs-ink:#25371e!important;--ovs-ink2:#53654a!important;--ovs-paper:#f8f5e9!important;--ovs-mist:#e8eddd!important;--ovs-leaf2:#3c5627!important;--ovs-forest:#172619!important;--ovs-bark:#4b402a!important}.ovs-root[data-scheme="dark"]{--ovs-paper:#172619!important;--ovs-ink:#f8f5e9!important;--ovs-ink2:#b4c0a6!important;--ovs-card:#203323!important}#root:has(.ovs-root) #loading{display:none}</style>
-<script type="importmap">{"imports":{"react":"https://esm.sh/react@18.3.1","react-dom/client":"https://esm.sh/react-dom@18.3.1/client?external=react","gsap":"https://esm.sh/gsap@3.14.2","gsap/ScrollTrigger":"https://esm.sh/gsap@3.14.2/ScrollTrigger"}}</script>
-</head><body><div id="root"><div id="loading"><strong>GIANNOS</strong><small>Loading the story...</small></div></div>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Overstory Studio — Original ZIP Preview</title>
+<link rel="preconnect" href="https://esm.sh">
+<script type="importmap">
+{"imports":{
+"react":"https://esm.sh/react@18.3.1",
+"react-dom/client":"https://esm.sh/react-dom@18.3.1/client?external=react",
+"gsap":"https://esm.sh/gsap@3.14.2",
+"gsap/ScrollTrigger":"https://esm.sh/gsap@3.14.2/ScrollTrigger"
+}}
+</script>
+<style>html,body,#root{margin:0;width:100%;min-height:100%;}body{background:#f4f4ee;}#loading{position:fixed;inset:0;display:grid;place-items:center;font:500 15px/1.5 system-ui;color:#273722}#error{white-space:pre-wrap;color:#a22;padding:24px;font:14px monospace}</style>
+</head>
+<body>
+<div id="root"><div id="loading">Loading original Overstory Studio landing…</div></div>
 <script type="module">
-import * as React from "react";
-import { createRoot } from "react-dom/client";
+import React from "react";
+import {createRoot} from "react-dom/client";
 import OverstoryStudioLanding from "./giannos-original-component.js";
-try{createRoot(document.getElementById("root")).render(React.createElement(OverstoryStudioLanding,{
-brand:"GIANNOS",
-season:"summer",theme:"light",themeToggle:false,
-status:"A Mediterranean olive oil story",
-hero:{lead:"Rooted in",words:["NATURE","GREECE","TRADITION"],tail:"Olive Oil.",trusted:"Inspired by the Mediterranean",cue:"Scroll to discover the story"},
-links:[{label:"Our Story",href:"#process"},{label:"Explore",href:"#services"},{label:"Discover",href:"#work"},{label:"Contact",href:"#contact"}],
-cta:{title:"From nature. With care.",text:"A new way to experience the Giannos story.",button:"Discover Giannos"}
-}));}catch(e){document.getElementById("root").textContent="Preview error: "+e.message;console.error(e)}
-</script></body></html>
+createRoot(document.getElementById("root")).render(React.createElement(OverstoryStudioLanding));
+</script>
+</body>
+</html>
