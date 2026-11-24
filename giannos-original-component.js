@@ -796,7 +796,7 @@ function ServiceArt({ art }) {
                 React.createElement("rect", { x: "18", y: "18", width: "96", height: "124", rx: "10", fill: "var(--ovs-accent)" }),
                 React.createElement("g", { transform: "translate(66 80) scale(2.2) translate(-16 -16)", fill: "var(--ovs-soft)" }, Array.from({ length: 8 }, (_, i) => (React.createElement("path", { key: i, transform: "rotate(" + i * 45 + " 16 16)", d: "M16 1.6c2.6 1.9 3.6 4.4 2.6 7.2-.6 1.6-1.6 2.4-2.6 2.8-1-.4-2-1.2-2.6-2.8-1-2.8 0-5.3 2.6-7.2z", opacity: i % 2 ? 0.6 : 1 })))),
                 ["var(--ovs-soft)", "var(--ovs-ink)", "var(--ovs-mist)", "var(--ovs-accent)"].map((c, i) => (React.createElement("rect", { key: i, x: 128 + (i % 2) * 50, y: 18 + Math.floor(i / 2) * 50, width: "42", height: "42", rx: "8", fill: c, stroke: "var(--ovs-line)" }))),
-                React.createElement("text", { x: "128", y: "138", fontSize: "26", fontFamily: "Georgia, serif", fill: "var(--ovs-ink)" }, "Aa"),
+                React.createElement("text", { x: "128", y: "138", fontSize: "26", fontFamily: "DM Sans, sans-serif", fill: "var(--ovs-ink)" }, "Aa"),
                 React.createElement("text", { x: "170", y: "138", fontSize: "26", fontWeight: "700", fill: "var(--ovs-ink)" }, "Aa")));
         case "product":
             return (React.createElement("svg", { className: "ovs-svg", viewBox: "0 0 240 160", "aria-hidden": "true" },
@@ -1727,7 +1727,7 @@ export default function OverstoryStudioLanding({ brand = "Overstory", links = DE
                         React.createElement("path", { d: "M8 13V3M4 7l4-4 4 4", fill: "none", stroke: "currentColor", strokeWidth: "1.6", strokeLinecap: "round", strokeLinejoin: "round" })))))) : null));
 }
 const OVS_CSS = `
-.ovs-root{--ovs-ink:#10150d;--ovs-ink2:#4b5546;--ovs-paper:#f4f6f0;--ovs-card:#ffffff;--ovs-mist:#e6eff5;--ovs-line:rgba(16,21,13,.12);--ovs-bark:#3b3424;--ovs-leaf2:#6f9a2a;--ovs-forest:#0e1a10;--ovs-hero-ink:#0f130c;--ovs-sans:"Inter Display","Inter","SF Pro Display",-apple-system,BlinkMacSystemFont,"Segoe UI","Helvetica Neue",Arial,sans-serif;--ovs-serif:"Bodoni Moda","Didot","Bodoni 72","Playfair Display","Libre Caslon Display","Times New Roman","Liberation Serif",serif;position:relative;min-height:var(--ovs-h);background:var(--ovs-paper);color:var(--ovs-ink);font-family:var(--ovs-sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip;isolation:isolate;text-align:left}
+.ovs-root{--ovs-ink:#10150d;--ovs-ink2:#4b5546;--ovs-paper:#f4f6f0;--ovs-card:#ffffff;--ovs-mist:#e6eff5;--ovs-line:rgba(16,21,13,.12);--ovs-bark:#3b3424;--ovs-leaf2:#6f9a2a;--ovs-forest:#0e1a10;--ovs-hero-ink:#0f130c;--ovs-sans:"DM Sans",sans-serif;--ovs-serif:"DM Sans",sans-serif;position:relative;min-height:var(--ovs-h);background:var(--ovs-paper);color:var(--ovs-ink);font-family:var(--ovs-sans);font-size:16px;line-height:1.5;-webkit-font-smoothing:antialiased;overflow-x:clip;isolation:isolate;text-align:left}
 .ovs-root[data-scheme="dark"]{--ovs-ink:#edf1e6;--ovs-ink2:#a5b09d;--ovs-paper:#0b110e;--ovs-card:#121a16;--ovs-mist:#131d2c;--ovs-line:rgba(237,241,230,.13);--ovs-bark:#8a7a5c;--ovs-leaf2:#5f8a3a;--ovs-forest:#060c08;--ovs-hero-ink:#f3f4ec}
 .ovs-root[data-season="autumn"]{--ovs-leaf2:#c9702a;--ovs-bark:#4a3020}
 .ovs-root[data-season="blossom"]{--ovs-leaf2:#d98aa9;--ovs-bark:#4a3036}
